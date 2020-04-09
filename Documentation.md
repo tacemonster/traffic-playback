@@ -138,7 +138,24 @@ select * from log;
 
 ## Traffic playback client application
 
-......
+
+The playback module requires node.js and npm. 
+You will need to install Node.js and npm on your machine.
+
+For Windows and Mac users who don't have Node or Npm installed, it is recommended to install
+Node and npm via the appropriate operating system installer from the following link: https://nodejs.org/en/download/
+
+If possible and applicable to your machine and circumstances, it is recommended that you uninstall outdated versions of node and npm in order to avoid any possible complications and conflicts that may arise due to updating the old version of node.
+
+For Linux users, it is recommended to install node via the command line; however, the command line installations rely on a package manager, so if your system does not have said package manager installed or said package manager is outdated, you will need to update it, or install the package manager in order to install the latest version  of node and the accompanying npm version on your system.
+
+Locate your Linux distro and follow the installation instructions in the link below:
+
+https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions-enterprise-linux-fedora-and-snap-packages
 
 
+After successful installation, run the commands node -v to display your currently installed version of node, and run
+the command npm -v to display your current version of npm. If both commands run successfully, then npm and node are
+installed on your system.
 
+To run the playback script, it's easiest to navigate to the folder of Playbackprototype.js via the terminal. When inside said directory run the command node Playbackprototype.js
