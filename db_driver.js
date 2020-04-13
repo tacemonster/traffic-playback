@@ -37,7 +37,7 @@ class DB_Driver {
         console.log("Hello from database driver");
     }
 
-    // function to run a custom query
+    // function to run a custom query with Promise object returned
     query(q) {
         let mycon = this.con;
         return new Promise(function (resolve, reject) {
@@ -54,6 +54,21 @@ class DB_Driver {
                 reject(new Error("Error! No database connection yet!"));
             }   
         }); 
+    }
+
+    // function to run a custom query with callback function returned
+    query_callback(q, callback) {
+        if (this.con) {
+            this.con.query(q, function (error, result, fields) {
+                // if (error) {
+                //     throw error;
+                // }
+                // console.log(result);
+                return callback(result, error);
+            });
+        } else {
+            return callback(null, "Error! No database connection yet!");
+        }
     }
 
     // to get all data.
