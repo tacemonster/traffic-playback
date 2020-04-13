@@ -2,7 +2,7 @@ var my_database = require('./db_driver').DB_Driver;
 const database_driver = new my_database();
 
 database_driver.hello();
-// database_driver.connect();
+database_driver.connect();
 
 // run query with Promise object returned
 database_driver.query("select * from log where id = 2")
