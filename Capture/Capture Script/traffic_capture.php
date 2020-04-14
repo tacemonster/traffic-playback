@@ -1,9 +1,16 @@
 <?php
 
+//Begin script configuration block
+$starttime = 0;
+$endtime = PHP_INT_MAX;
+//Database configuration
 $servername = "localhost";
 $username = "traffic";
 $password = "12345";
 $database = "traffic_log";
+//End script configuration block
+
+//Connect to mysql, and cleanly handle any errors.
 $conn = new mysqli($servername, $username, $password, $database);
 
 if ($conn->connect_error)
@@ -12,38 +19,62 @@ if ($conn->connect_error)
 }
 echo "Connected successfully<br>";
 
-
-$secure = $_GET['secure'];
-$proto = $_GET['proto'];
-$host = $_GET['host'];
-$uri = $_GET['uri'];
-$method = $_GET['method'];
-
-$requesttime = $_GET['time'];
-
-//Clean up what we get from nginx: 'on' when https '' when http.
-if($secure != "on")
-	$secure = "off";
-
+//define variables in the global scope for later use.
 $source_ip = "";
+$secure = "";
+$proto = "";
+$host = "";
+$uri = "";
+$method = "";
+$requesttime = "";
+$headers = "";
 
 foreach (getallheaders() as $name => $value)
 {
-        if($name == "X-Real-IP")
-                $source_ip = $value;
-        else
-                $headers .= "$name,$value;";
+	switch($name)
+	{
+	case "tpt-ip":
+		$source_ip = $value;
+		break;
+	case "tpt-secure":
+		$secure = $value;
+		break;
+	case "tpt-proto":
+		$proto = $value;
+		break;
+	case "tpt-host":
+		$host = $value;
+		break;
+	case "tpt-uri":
+		$uri = $value;
+		break;
+	case "tpt-method":
+		$method = $value;
+		break;
+	case "tpt-requesttime":
+		$requesttime = $value;
+		break;
+	default:
+		$headers .= "$name,$value;";
+	}
 }
 
-$date = new DateTime();
-$unixtime = $date->getTimestamp();
+//if the time of the current request falls outside of the timeframe, exit the script without logging.
+if($requesttime < $starttime && $requesttime > $endtime)
+{
+	$conn->close();
+	die();
+}
 
-echo ("Request Time: " . $requesttime . "<br>");
-
+//Construct our sql query to log the request to the database.
 $sql = "INSERT INTO log (utime, secure, proto, host, uri, method, headers, sourceip) VALUES ('$requesttime', '$secure', '$proto', '$host', '$uri', '$method', '$headers', '$source_ip');";
-echo($sql . "<br>");
+
+//Execute the sql query and handle any errors.
 if(!$conn->query($sql))
 	echo("Query Error" . $conn->error . "<br>");
+
+//Close the database connection and terminate the script.
 $conn->close();
 
 ?>
+

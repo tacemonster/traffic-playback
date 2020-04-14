@@ -1,18 +1,23 @@
 server {
-  listen    80;
-  server_name localhost;
+        listen		80;
+        server_name	localhost;
 
-  location / {
-    mirror /mirror;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_pass http://127.0.0.1:8080/;
-  }
+        location / {
+                mirror /mirror;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_pass http://127.0.0.1:8080/;
+        }
 
-  location /mirror {
-    internal;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_pass http://127.0.0.1:8080/traffic_capture.php?secure=$https&proto=$server_protocol&host=$host&uri=$request_uri&method=$request_method&time=$msec;
-  }
+        location /mirror {
+                internal;
+                proxy_set_header tpt-ip $remote_addr;
+                proxy_set_header tpt-secure $https;
+                proxy_set_header tpt-proto $server_protocol;
+                proxy_set_header tpt-host $host;
+                proxy_set_header tpt-uri $request_uri;
+                proxy_set_header tpt-method $request_method;
+                proxy_set_header tpt-requesttime $msec;
+                proxy_pass http://127.0.0.1:8080/traffic_capture.php;
+        }
 }
