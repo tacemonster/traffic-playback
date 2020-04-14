@@ -1,19 +1,21 @@
-var my_database = require('./db_driver').DB_Driver;
-const database_driver = new my_database();
+// For database driver testing only.
 
-database_driver.hello();
-database_driver.connect();
+var my_database = require('./db_driver').DB_Driver;  // import db driver module
+const database_driver = new my_database();  // instantiate class
+
+database_driver.connect();  // connect to MySQL
 
 // run query with Promise object returned
 database_driver.query("select * from log where id = 2")
     .then((result) => { console.log(result); })  // handle response
     .catch((err) => console.log(err));           // handle error
 
+// another way to handle response
 database_driver.query("select * from log where id = 3")
     .then(handleResponse)
     .catch(handleError);
 
-// get all result from 'log' table
+// as example, get all result from 'log' table
 database_driver.query_get_all().then(handleResponse).catch(handleError);
 
 // run query with callback function returned
@@ -31,8 +33,8 @@ function handleResponse(res) {
     console.log(res);
 }
 
-function handleError(e) {
-    console.log(e);
+function handleError(error) {
+    console.log(error);
 }
 
-database_driver.disconnect();
+database_driver.close();

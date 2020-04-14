@@ -7,42 +7,50 @@ const connection_information = {
     database: "traffic_log"
 }
 
-// a db driver class to handle MySQL connection, query, etc
+/**
+ * a db driver class to handle MySQL connection, query, etc
+ */
 class DB_Driver {
     constructor() {
         this.con = null;
     }
 
-    // Connect to MySQL Server, throw error if there is a connection error.
+    /**
+     * Connect to MySQL Server, throw error if there is a connection error.
+     */
     connect() {
         this.con = mysql.createConnection(connection_information);
         this.con.connect((err) => {
             if (err) {
                 throw err;
             } else {
-                console.log("MySQL Traffic Database Connected Successfully!");
+                console.log("==> MySQL Traffic Database Connected Successfully!");
             }
-        })
+        });
     }
 
-    // close MySQL connection
-    disconnect() {
+    /**
+     * close MySQL connection
+     */
+    close() {
         if (this.con) {
-            this.con.end();
-            console.log("MySQL Connection Ended!");
+            this.con.end((err) => {
+                if (err)
+                    throw err;
+                console.log("==> MySQL Connection Ended!");
+            });   
         }
     }
 
-    hello() {
-        console.log("Hello from database driver");
-    }
-
-    // function to run a custom query with Promise object returned
-    query(q) {
+    /**
+     * function to run a custom query with Promise object returned
+     * @param {String} query - query as String
+     */
+    query(query) {
         let mycon = this.con;
         return new Promise(function (resolve, reject) {
             if (mycon) {
-                mycon.query(q, function (error, result, fields) {
+                mycon.query(query, function (error, result, fields) {
                     if (error) {
                         reject(error);
                     }
@@ -50,16 +58,21 @@ class DB_Driver {
                     // console.log(fields);
                     resolve(result);
                 });
+                
             } else {
                 reject(new Error("Error! No database connection yet!"));
             }   
         }); 
     }
 
-    // function to run a custom query with callback function returned
-    query_callback(q, callback) {
+    /**
+     * function to run a custom query with callback function returned
+     * @param {String} query - query as String
+     * @param {*} callback - callback function to handle query result, param (result, error)
+     */
+    query_callback(query, callback) {
         if (this.con) {
-            this.con.query(q, function (error, result, fields) {
+            this.con.query(query, function (error, result, fields) {
                 // if (error) {
                 //     throw error;
                 // }
@@ -71,12 +84,30 @@ class DB_Driver {
         }
     }
 
-    // to get all data.
+    /**
+     * Get everything from log table.
+     */
     query_get_all() {
         return this.query("select * from log");
     }
-}
 
+    /**
+     * escape data like Boolean, Date object, String, Arrays, underfine/null into
+     * normal SQL query data to avoid SQL injection attack. use for user input.
+     * @param {*} data - any data
+     */
+    escape_data(data) {
+        return mysql.escape(data);
+    }
+
+    /**
+     * escape integer into String, like 5 => '5'
+     * @param {Number} int - integer value
+     */
+    escape_int(int) {
+        return mysql.escapeId(int);
+    }
+}
 
 /**
  * export this module
@@ -84,8 +115,8 @@ class DB_Driver {
  *   var my_database = require('./db_driver').DB_Driver;    // import the module
  *   const database_driver = new my_database();   // instantiate the class
  *   database_driver.connect();     // connect to MySQL
- *   database_driver.query("select * from log")   // run query
- *   database_driver.disconnect();   // close connection at the end.
+ *   database_driver.query("select * from log").then().catch();   // run query
+ *   database_driver.close();   // close connection at the end.
  */
 module.exports = {
     DB_Driver: DB_Driver
