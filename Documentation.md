@@ -30,9 +30,9 @@ sudo apt install nginx
 ```
 
 #### Modify configuration file to configure nginx as a reverse proxy
-replace server configuration file at **/etc/sites-available/default** with the following:
+replace server configuration file at **/etc/nginx/sites-available/default** with the following:
 
-` sudo vi /etc/sites-available/default`
+` sudo vi /etc/nginx/sites-available/default`
 
 ``` sh
 server {
