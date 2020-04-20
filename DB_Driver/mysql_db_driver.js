@@ -1,5 +1,6 @@
 var mysql = require('mysql');
 
+// pre-defined configuration info, change it or pass as argument from other side.
 const connection_information = {
     host: "localhost",
     user: "traffic",
@@ -18,8 +19,13 @@ class DB_Driver {
     /**
      * Connect to MySQL Server, throw error if there is a connection error.
      */
-    connect() {
-        this.con = mysql.createConnection(connection_information);
+    connect(config) {
+        if (config === undefined) {
+            this.con = mysql.createConnection(connection_information);
+        } else {
+            this.con = mysql.createConnection(config);
+        }
+        
         this.con.connect((err) => {
             if (err) {
                 throw err;
