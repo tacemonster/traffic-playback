@@ -1,6 +1,6 @@
 // For database driver testing only.
 
-var my_database = require('./db_driver').DB_Driver;  // import db driver module
+var my_database = require('./mysql_db_driver').DB_Driver;  // import db driver module
 const database_driver = new my_database();  // instantiate class
 
 database_driver.connect();  // connect to MySQL
