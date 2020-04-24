@@ -21,7 +21,7 @@ function connect(custom_config) {
         if (err)
             console.log('connection error', err.stack);
         else
-            console.log('connected to postgres');
+            console.log('==> Connected to postgres');
     })
 }
 
@@ -32,7 +32,7 @@ function query(query) {
             pg_client.query(query, (err, res) => {
                 if (err)
                     reject(err);
-                resolve(res);
+                resolve(res.rows);
             });
         } else {
             reject(new Error("Error! No database connection yet!"));
@@ -53,12 +53,12 @@ function query_callback(query, callback) {
 
 function close() {
     if (pg_client) {
-        pg_client.close((err) => {
+        pg_client.end((err) => {
             if (err)
                 console.log(err);
             else
-                console.log('postgres client disconnected');
-        })
+                console.log("==> postgres client disconnected");
+        });
     } else {
         console.log("Not connected yet");
     }
