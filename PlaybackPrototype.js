@@ -34,12 +34,15 @@ function dispatch_request(options){
     var webreq = options.secure ? https : http
 
 
-    var req_options = {"host":"localhost", "path":options.uri, "method":options.method, "headers":req_headers}
+    var req_options = {"host":"localhost", "setHost":false, "path":options.uri, "method":options.method, "headers":req_headers}
     var req = webreq.request(req_options, (res) => {
         res.setEncoding("utf-8")
 	res.on('data', (data)=>{/*console.log(data)*/})
 	res.on('end', ()=>{console.log("Finished streaming data for request response.")})
 	}) //Create the request
+
+	if(options.reqbody != "")
+		req.write(options.reqbody)
         req.end()
 }
 
@@ -54,7 +57,7 @@ var connection_arguments = {
 var connection = mysql.createConnection(connection_arguments)
 
 //Issue a static GET query for the prototype. 
-connection.query('SELECT * FROM raw WHERE method="GET"', function (error, results, fields) {
+connection.query('SELECT * FROM raw', function (error, results, fields) {
     if (error)
         throw error
     
