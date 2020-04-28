@@ -7,7 +7,7 @@ $endtime = PHP_INT_MAX;
 $servername = "localhost";
 $username = "traffic";
 $password = "12345";
-$database = "traffic_log";
+$database = "trafficDB";
 //End script configuration block
 
 //Connect to mysql, and cleanly handle any errors.
@@ -20,13 +20,13 @@ if ($conn->connect_error)
 echo "Connected successfully<br>";
 
 //define variables in the global scope for later use.
-$source_ip = "";
-$secure = "";
-$proto = "";
-$host = "";
-$uri = "";
-$method = "";
-$requesttime = "";
+$source_ip = "0.0.0.0";
+$secure = 0;
+$proto = "INVAL";
+$host = "invalid.capture.com";
+$uri = "/";
+$method = "FAIL";
+$requesttime = 1588046592.000;
 $headers = "";
 
 foreach (getallheaders() as $name => $value)
@@ -37,7 +37,8 @@ foreach (getallheaders() as $name => $value)
 		$source_ip = $value;
 		break;
 	case "tpt-secure":
-		$secure = $value;
+		if($value == "on")
+			$secure = 1;
 		break;
 	case "tpt-proto":
 		$proto = $value;
@@ -55,9 +56,13 @@ foreach (getallheaders() as $name => $value)
 		$requesttime = $value;
 		break;
 	default:
-		$headers .= "$name,$value;";
+		$headers .= "$name:::::$value" . "\r\n";
 	}
 }
+
+//if headers are empty, lets give it a default value
+if(empty($headers))
+	$headers = "INVALID:HEADERS";
 
 //if the time of the current request falls outside of the timeframe, exit the script without logging.
 if($requesttime < $starttime && $requesttime > $endtime)
@@ -66,9 +71,12 @@ if($requesttime < $starttime && $requesttime > $endtime)
 	die();
 }
 
-//Construct our sql query to log the request to the database.
-$sql = "INSERT INTO log (utime, secure, proto, host, uri, method, headers, sourceip) VALUES ('$requesttime', '$secure', '$proto', '$host', '$uri', '$method', '$headers', '$source_ip');";
+$post = file_get_contents('php://input');
 
+
+
+//Construct our sql query to log the request to the database.
+$sql = "INSERT INTO raw (utime, secure, protocol, host, uri, method, header, reqbody, sourceip) VALUES ($requesttime, '$secure', '$proto', '$host', '$uri', '$method', '$headers', '$post', '$source_ip');";
 //Execute the sql query and handle any errors.
 if(!$conn->query($sql))
 	echo("Query Error" . $conn->error . "<br>");
