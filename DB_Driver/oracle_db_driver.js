@@ -11,7 +11,7 @@ myOracle.outFormat = myOracle.OUT_FORMAT_OBJECT;
 
 var oracle_client;
 
-function connect(custom_config) {
+async function connect(custom_config) {
     let config;
     if (oracle_client === undefined) {
         if (custom_config)
@@ -23,7 +23,7 @@ function connect(custom_config) {
             oracle_client = await myOracle.getConnection(config);
             console.log('connected to Oracle database');
         } catch (err) {
-            console.log('Error: ' + err);
+            console.log('Error Message: ' + err);
         }
     }
 }
