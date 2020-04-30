@@ -28,7 +28,7 @@ function pre_request_hook(options, editable_options, req_options) {
     console.log('pre')
     for(let hook of hooks) {
         if(hook.event_type === hook_events.PRE_REQUEST) {
-            hook.func()
+            hook.func(options, editable_options, req_options)
         }
     }
 }
@@ -37,7 +37,7 @@ function request_callback_hook(res) {
     console.log('callback')
     for(let hook of hooks) {
         if(hook.event_type === hook_events.REQUEST_CALLBACK) {
-            hook.func()
+            hook.func(res)
         }
     }
 }
@@ -46,7 +46,7 @@ function post_request_hook(req, options) {
     console.log('post')
     for(let hook of hooks) {
         if(hook.event_type === hook_events.POST_REQUEST) {
-            hook.func()
+            hook.func(req, options)
         }
     }
 }
