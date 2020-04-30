@@ -10,17 +10,22 @@ var base_local_time = 0;
 
 var hooks = [] //
 
-const hook_events = {
-    PRE_REQUEST: 'pre-request',
-    REQUEST_CALLBACK: 'request callback',
-    POST_REQUEST: 'post-request'
+var methods = {
+    hook_events: hook_events = {
+        PRE_REQUEST: 'pre-request',
+        REQUEST_CALLBACK: 'request callback',
+        POST_REQUEST: 'post-request'
+    },
+    register_hook: function register_hook(priority, event_type, func ) {
+        sorted.add(hooks, { value: priority, event_type: event_type, func: func }, (a, b) => { return a.value - b.value; })
+    }
 }
 
-function register_hook(priority, event_type, func ) {
-    sorted.add(hooks, { value: priority, event_type: event_type, func: func }, (a, b) => { return a.value - b.value; })
-}
+module.exports = methods
+var plugins = require('./plugins')
 
 function pre_request_hook(options, editable_options, req_options) {
+    console.log('pre')
     for(let hook of hooks) {
         if(hook.event_type === hook_events.PRE_REQUEST) {
             hook.func()
@@ -29,6 +34,7 @@ function pre_request_hook(options, editable_options, req_options) {
 }
 
 function request_callback_hook(res) {
+    console.log('callback')
     for(let hook of hooks) {
         if(hook.event_type === hook_events.REQUEST_CALLBACK) {
             hook.func()
@@ -37,6 +43,7 @@ function request_callback_hook(res) {
 }
 
 function post_request_hook(req, options) {
+    console.log('post')
     for(let hook of hooks) {
         if(hook.event_type === hook_events.POST_REQUEST) {
             hook.func()
@@ -131,6 +138,3 @@ connection.query('SELECT * FROM raw', function (error, results, fields) {
   })
 //Close the connection.
 connection.end()
-
-
-
