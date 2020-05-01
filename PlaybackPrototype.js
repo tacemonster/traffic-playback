@@ -8,8 +8,9 @@ var requests_cache = {}
 var base_request_time = 0
 var base_local_time = 0;
 
-var hooks = [] //
+var hooks = [] // Keeps track of all the hooks
 
+// Exporting the events and the register_hook function so plugins can use it
 var methods = {
     hook_events: hook_events = {
         PRE_REQUEST: 'pre-request',
@@ -20,10 +21,15 @@ var methods = {
         sorted.add(hooks, { value: priority, event_type: event_type, func: func }, (a, b) => { return a.value - b.value; })
     }
 }
-
 module.exports = methods
-var plugins = require('./plugins')
 
+// This will bring in all of the plugins in the files referred to in the index.js file in the plugins directory
+// When this occurs, all the register_hook functions in the plugin files will be executed
+var plugins = require('./plugins') // Ask Berin if this could lead to any security vulnerabilities?
+
+// Loops through all pre-request hooks and executes the functions associated with them
+// Exposes a read-only version of the options (information from the database), allows plugin developers to edit
+// certain options (secure and request body), and req_options
 function pre_request_hook(options, editable_options, req_options) {
     console.log('pre')
     for(let hook of hooks) {
@@ -33,6 +39,7 @@ function pre_request_hook(options, editable_options, req_options) {
     }
 }
 
+// Exposes the response variable and (should) allow users to add callback functions to be executed after requests terminate
 function request_callback_hook(res) {
     console.log('callback')
     for(let hook of hooks) {
