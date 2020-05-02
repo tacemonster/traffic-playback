@@ -1,32 +1,32 @@
 var mssql = require("mssql");
 
 // config for your database
-const configuration = {
+const default_configuration = {
     user: 'sa',
     password: 'your_password',
     server: 'localhost',
     database: 'traffic'
 };
 
-var sql_request = null;
+var sql_request;
 
 /**
  * connect to SQL Server
  */
-connect = (configuration_info) => {
+connect = (configuration) => {
     var config;
     if (configuration_info === undefined) {
-        config = configuration;
+        config = default_configuration;
     } else {
-        config = configuration_info;
+        config = configuration;
     }
 
     mssql.connect(config, function (err) {
         if (err)
             throw err;
         sql_request = new mssql.Request();
-        console.log("Connected to SQL Server.");
-    })
+        console.log("==> Connected to SQL Server.");
+    });
 }
 
 /**
@@ -60,13 +60,6 @@ query_callback = (query, callback) => {
     }
 }
 
-/**
- * export functions, use by:
- *      var mssql = require('./sqlserver_db_driver.js');
- *      mssql.connect();
- *      mssql.query("select * from table").then(handle_result).catch(handle_error);
- *      mssql.query_callback("select * from table", function(res, err){handle});
- */
 module.exports = {
     connect,
     query,

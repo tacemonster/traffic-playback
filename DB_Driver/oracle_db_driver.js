@@ -4,7 +4,6 @@ const default_config = {
     user: "oracle",
     password: "my_password",
     connectString: "",
-    
 };
 
 myOracle.outFormat = myOracle.OUT_FORMAT_OBJECT;
@@ -21,7 +20,7 @@ async function connect(custom_config) {
         
         try {
             oracle_client = await myOracle.getConnection(config);
-            console.log('connected to Oracle database');
+            console.log('==> connected to Oracle database');
         } catch (err) {
             console.log('Error Message: ' + err);
         }
