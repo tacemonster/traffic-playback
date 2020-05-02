@@ -25,7 +25,7 @@ Install Node.js Dependency
 npm install pg
 ```
 
-* Setup Postgres
+Setup Postgres
 Install postgres: 
 ``` bash
 $ sudo apt install postgresql postgresql-contrib
