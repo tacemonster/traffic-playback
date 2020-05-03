@@ -17,8 +17,6 @@ function NavListing(props)
          return ret_val;
         })
 
-     
-
 return (
          <section className={"row justify-center row-custom"}>
              <div className={"col-6 col-md-4"}> {props.value}</div>
@@ -28,6 +26,5 @@ return (
          </section>
         );
 }
-
 
 export default NavListing;
