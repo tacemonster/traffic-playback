@@ -18,9 +18,7 @@ class Body extends React.Component {
                 {this.props.children}
             </div>
         </div>);
-    }
-
-   
+    }  
 }
 
 export default Body;
