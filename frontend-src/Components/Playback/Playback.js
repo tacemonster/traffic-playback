@@ -13,9 +13,8 @@ import Navbar from "../Nav/Navbar"
 import HTTPClientEndPoint from '../ComponentTemplates/HTTPServices/HTTPClientEndPoint'
 
 
-
-
-//This class reports URLS and URL->[job list mappings] for the playback app.
+//This class reports URLS and URL->[job list mappings] for the playback app.Will be absorbed into
+//HttpClienEndPoint
 class UrlJobInfo {
 
   constructor(urlData)
@@ -41,6 +40,7 @@ class UrlJobInfo {
     {
       ret_val = this.urlInfo[url] 
     }
+          
     return ret_val 
   }
 
@@ -56,12 +56,12 @@ class UrlJobInfo {
 
     return ret_val
   }
-
 }
+
+
 //The playback class is mainly used to configure routing settings, and perform communication
 //with the database, either directly or through a service  component. We'll see what the best 
 //setup is once we cross that bridge.
-
 class PlayBack extends React.Component {
     
     constructor(props){
@@ -73,14 +73,8 @@ class PlayBack extends React.Component {
          ["1-x-x-placeholder","2-x-x-placeholder"],"www.google3.com":["1-x-x-placeholder"]}),
          InProgressJobsUrls: new UrlJobInfo({ "www.facebook.com":["1-2-x-placeholder","2-x-x-placeholder"],"www.dogpile.com":
          ["1-x-x-placeholder","2-x-x-placeholder"]})
-
     }
-
   }
-
-    
-  
-
 
     //This app builds many dynamic routes.
     //buildDynamicRoutes is the function responsible for accomplishing this.
@@ -163,11 +157,9 @@ class PlayBack extends React.Component {
                     return (<NavListing  value={urlJob} buttons={[{name:"Cancel", route:route },{name:"Pause", route:route }]}/>);
                     })
                 }
-            </Route>
-            
+            </Route>       
           );
           routeList = routeList.concat(concatRoutes)
-
       }
       //Return the list of all routes and their assigned components for rendering.
       return (
@@ -193,16 +185,16 @@ class PlayBack extends React.Component {
       // marked completed or a new InProgress job was initiated, and etc. All of these actions
       //require dynamic route updates.
       return (completedJobsNotEqual || inProgressJobsNotEqual)
-
     }
 
     //The render function renders the navbar which at this point is static
     //The render function also returns a Body component.
     // In the body component we then render routes such as
     // /completedjobs, /inprogressjobs, and etc.
-    render(){
+    render()
+    {
      
-    return (
+      return (
           <Router>
             <Navbar navLinks={this.props.navLinks} urls={this.getUrls} urlJobs={this.getUrlJobs}/>
               <Body>
@@ -212,10 +204,8 @@ class PlayBack extends React.Component {
                 </Switch>
               </Body>
           </Router>
-        );
+         );
     }
-
-
 }
 
 
