@@ -1,4 +1,4 @@
-var mysql = require('mysql');
+const mysql = require('mysql');
 
 // pre-defined configuration info, change it or pass as argument from other side.
 const default_configuration = {
@@ -8,7 +8,7 @@ const default_configuration = {
     database: "traffic_log"
 }
 
-var connection;
+let connection;
 
 /**
  * Connect to MySQL Server, throw error if there is a connection error.

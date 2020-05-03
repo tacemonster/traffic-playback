@@ -1,4 +1,4 @@
-var mysql = require('mariadb/callback');
+const mariadb = require('mariadb/callback');
 
 // pre-defined configuration info, change it or pass as argument from other side.
 const default_config = {
@@ -8,13 +8,13 @@ const default_config = {
     database: "traffic_log",
 };
 
-var connection;
+let connection;
 // connect
 function connect(custom_config) {
     if (custom_config) {
-        connection = mysql.createConnection(custom_config);
+        connection = mariadb.createConnection(custom_config);
     } else {
-        connection = mysql.createConnection(default_config);
+        connection = mariadb.createConnection(default_config);
     }
 
     connection.connect((err) => {

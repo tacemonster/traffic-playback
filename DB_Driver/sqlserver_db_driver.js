@@ -1,4 +1,4 @@
-var mssql = require("mssql");
+const mssql = require("mssql");
 
 // config for your database
 const default_configuration = {
@@ -8,13 +8,13 @@ const default_configuration = {
     database: 'traffic'
 };
 
-var sql_request;
+let sql_request;
 
 /**
  * connect to SQL Server
  */
 connect = (configuration) => {
-    var config;
+    let config;
     if (configuration_info === undefined) {
         config = default_configuration;
     } else {

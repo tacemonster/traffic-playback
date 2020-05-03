@@ -1,4 +1,4 @@
-var { Client } = require('pg');
+const { Client } = require('pg');
 
 const default_config = {
     user: 'postgres',
@@ -8,7 +8,7 @@ const default_config = {
     port: 5432
 };
 
-var pg_client;
+let pg_client;
 
 function connect(custom_config) {
     if (custom_config) {

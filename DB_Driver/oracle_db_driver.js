@@ -1,4 +1,4 @@
-var myOracle = require('oracledb');
+const myOracle = require('oracledb');
 
 const default_config = {
     user: "oracle",
@@ -8,7 +8,7 @@ const default_config = {
 
 myOracle.outFormat = myOracle.OUT_FORMAT_OBJECT;
 
-var oracle_client;
+let oracle_client;
 
 async function connect(custom_config) {
     let config;
