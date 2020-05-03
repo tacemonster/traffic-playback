@@ -3,7 +3,6 @@ import logo from './logo.svg';
 import './App.css';
 import PlayBack from './Components/Playback/Playback';
 
-
 class App extends React.Component {
     
  render() {
