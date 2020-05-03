@@ -1,0 +1,28 @@
+.body-wrapper{
+    
+    min-height: 1000px;
+    height: auto;
+    width: 100%;
+   
+    position: relative;
+    z-index: 0;
+}
+
+.extended-nav{
+    opacity: 6.0;
+    background-color: gray;
+}
+
+.app-body{
+    background-color: white;
+    min-height: 1000px;
+    height:auto;
+    width:inherit;
+    margin-top: 80px;
+    border:3px solid white;
+    border-radius: 5px;
+}
+
+.body{
+    margin-top:10px;
+}
