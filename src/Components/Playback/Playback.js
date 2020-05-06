@@ -13,6 +13,8 @@ import BackNavHeadingTemplate from "../ComponentTemplates/BackNavHeadingTemplate
 import NavListing from "../ComponentTemplates/Listings";
 import Navbar from "../Nav/Navbar";
 import HTTPClientEndPoint from "../ComponentTemplates/HTTPServices/HTTPClientEndPoint";
+import { func } from "prop-types";
+import TrafficStatistic from '../ComponentTemplates/StatisticSite/TrafficStatistic';
 
 //This class reports URLS and URL->[job list mappings] for the playback app.
 class UrlJobInfo {
@@ -224,6 +226,7 @@ class PlayBack extends React.Component {
             <Route exact path="/">
               <div>Home Placeholder</div>
             </Route>
+            <Route exact path="/stats" component={TrafficStatistic}></Route>
             {this.buildDynamicRoutes()}
           </Switch>
         </Body>

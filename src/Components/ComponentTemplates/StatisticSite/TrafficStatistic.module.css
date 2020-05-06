@@ -1,0 +1,15 @@
+.title {
+    text-align: center;
+}
+
+.statTable {
+    max-height: 60vh;
+    overflow: auto;
+    width: 90%;
+    margin: 30px auto 20px;
+}
+
+.chartContainer {
+    width: 92%;
+    margin: 25px auto 30px;
+}
