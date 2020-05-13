@@ -6,114 +6,169 @@ import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-
 import style from './TrafficStatistic.module.css';
 import { Line } from 'react-chartjs-2';
-
 
 class TrafficStatistic extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            data: null
+        };
+    }
+
+    componentDidMount = () => {
+        fetch('http://ec2-54-152-230-158.compute-1.amazonaws.com:8000/api/play')
+            .then((res) => {
+                return res.json().then((json) => {
+                    return res.ok ? json : Promise.reject(json);
+                });
+            })
+            .then((result) => {
+                console.log(result);
+                this.setState({ data: result });
+            })
+            .catch((err) => {
+                console.log(err);
+            });
     }
     
     render() {
         return (
             <div>
-                <h2 className={style.title}>Traffic Playback Statistic</h2>
-                <StatsTable />
-                <StatsChart />
+                <h1 className={style.title}>Traffic Statistic</h1>
+                <hr></hr>
+                <StatsTable data={this.state.data} />
+                <StatsChart data={this.state.data} />
             </div>
         );
     }
 }
 
-const StatsTable = (props) => {
-    return (
-        <div className={style.statTable}>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>URI</th>
-                        <th>Domain</th>
-                        <th>Total Requests</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>/home</td>
-                        <td>www.example.com</td>
-                        <td>1234</td>
-                    </tr>
-                </tbody>
-            </Table>
-        </div>
-    );
+
+class StatsTable extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            content: []
+        };
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.data) {
+            let content = [];
+            let result = getSummarizedData(nextProps.data);
+            result.forEach(res => {
+                content.push(this.handleRow(res.uri, res.total));
+            });
+            this.setState({ content: content });
+        }
+    }
+
+    handleRow = (uri, total) => {
+        return (
+            <tr key={uri}>
+                <td>{uri}</td>
+                {/* <td></td> */}
+                <td>{total}</td>
+            </tr>
+        );
+    }
+
+    render() {
+        return (
+            <div>
+                <h2 className={style.title}>Traffic Summary</h2>
+                <div className={style.statTable}>
+                    <Table striped bordered hover size="sm" variant="dark">
+                        <thead>
+                            <tr>
+                                <th>URI</th>
+                                {/* <th>Domain</th> */}
+                                <th style={{minWidth: '90px'}}>Total Requests</th>
+                            </tr>
+                        </thead>
+                        <tbody>{this.state.content}</tbody>
+                    </Table>
+                </div>
+            </div>
+        );
+    }
 }
 
-const linedata = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-    datasets: [
-        {
-            label: 'uri-1',
-            fill: false,
-            lineTension: 0.1,
-            backgroundColor: 'rgba(75,192,192,0.4)',
-            borderColor: 'rgba(75,192,192,1)',
-            borderCapStyle: 'butt',
-            borderDash: [],
-            borderDashOffset: 0.0,
-            borderJoinStyle: 'miter',
-            pointBorderColor: 'rgba(75,192,192,1)',
-            pointBackgroundColor: '#fff',
-            pointBorderWidth: 1,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-            pointHoverBorderColor: 'rgba(220,220,220,1)',
-            pointHoverBorderWidth: 2,
-            pointRadius: 1,
-            pointHitRadius: 10,
-            data: [65, 59, 80, 81, 56, 55, 40],
-        },
-        {
-            label: 'uri-2',
-            fill: false,
-            lineTension: 0.1,
-            backgroundColor: 'rgba(230,54,192,0.4)',
-            borderColor: 'rgba(230,54,192,1)',
-            borderCapStyle: 'butt',
-            borderDash: [],
-            borderDashOffset: 0.0,
-            borderJoinStyle: 'miter',
-            pointBorderColor: 'rgba(230,54,192,1)',
-            pointBackgroundColor: '#fff',
-            pointBorderWidth: 1,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: 'rgba(230,54,192,1)',
-            pointHoverBorderColor: 'rgba(230,54,192,1)',
-            pointHoverBorderWidth: 2,
-            pointRadius: 1,
-            pointHitRadius: 10,
-            data: [15, 12, 200, 45, 23, 68, 100],
-        },
-    ],
-};
 
-const StatsChart = (props) => {
-    return (
-        <div className={style.chartContainer}>
-            <h2 className={style.title}>Traffic Analysis Chart</h2>
-            <StatsChartOptionsBar />
-            <hr></hr>
-            <Line data={linedata} />
-        </div>
-    );
+const lineColors = [
+    'rgb(237, 41, 58)',
+    'rgba(75,192,192,1)',
+    'rgba(230,54,192,1)',
+    'rgb(100, 53, 201)',
+    'rgb(33, 133, 208)',
+];
+
+class StatsChart extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            lineData: {},
+        };
+    }
+
+    // handle new request and update the line chart, result param received from StatsChartOptionsBar.
+    handleUpdate = (result) => {
+        if (!result) return null;
+        let i = 0;
+        // update data to the line chart
+        let lineData = {};
+        lineData.datasets = [];
+        lineData.labels = result.labels;
+        result.data.forEach((uri) => {
+            lineData.datasets.push({
+                label: `uri(${uri.name})`,
+                data: uri.traffic,
+                fill: false,
+                lineTension: 0.1,
+                backgroundColor: lineColors[i],
+                borderColor: lineColors[i],
+                borderCapStyle: 'butt',
+                borderDash: [],
+                borderDashOffset: 0.0,
+                borderJoinStyle: 'miter',
+                pointBorderColor: lineColors[i],
+                pointBackgroundColor: '#fff',
+                pointBorderWidth: 1,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: lineColors[i],
+                pointHoverBorderColor: 'rgba(220,220,220,1)',
+                pointHoverBorderWidth: 2,
+                pointRadius: 1,
+                pointHitRadius: 10,
+            });
+            ++i;
+        });
+        this.setState({ lineData: lineData });
+    };
+
+    render() {
+        return (
+            <div className={style.chartContainer}>
+                <h2 className={style.title}>Traffic Analysis Chart</h2>
+                <StatsChartOptionsBar
+                    data={this.props.data}
+                    lineHandler={this.handleUpdate}
+                />
+                <hr></hr>
+                <Line data={this.state.lineData} />
+            </div>
+        );
+    }
 }
+
 
 class StatsChartOptionsBar extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            uriList: ['/home', '/home/uri', '/traffic/abc/dsassfcsaaaaaaaaaaaaaaaaaaaaa', '/hello', '/hi', '/abc'],
+            uriList: ['/home', '/home/uri', '/traffic/abc/dsassfcsaaaaaaaaa', '/hello', '/hi', '/abc'],
             uriListVisible: [true, true, true, true, true, true],
             applyLoading: false,
         };
@@ -121,8 +176,26 @@ class StatsChartOptionsBar extends React.Component {
         this.selectedUri = [];
         this.startDate = '';
         this.endDate = '';
+        this.receivedData = false;
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (this.receivedData === false) {
+            if (nextProps.data) {
+                let uriList = getUriList(nextProps.data);
+                let num = uriList.length;
+                let visible = [];
+                for (let i = 0; i < num; ++i) visible.push(true);
+                this.setState({
+                    uriList: uriList.sort(),
+                    uriListVisible: visible,
+                });
+                this.receivedData = true;
+            }
+        }
+    }
+
+    // record checked checkbox value.
     handleCheckBox = (event) => {
         if (event.target.id) {
             let id = event.target.id;
@@ -133,6 +206,7 @@ class StatsChartOptionsBar extends React.Component {
                     // allow maximum of 5 uris selected.
                     if (this.selectedUri.length >= this.maxSelectedUri) {
                         event.target.checked = false;
+                        alert('Only maximum of 5 URIs allowed');
                     } else {
                         this.selectedUri.push(uri);
                     }
@@ -147,6 +221,7 @@ class StatsChartOptionsBar extends React.Component {
         }
     }
 
+    // handle uri filter in the uri dropdown.
     handleFilter = (event) => {
         let value = event.target.value.toLowerCase();
         let visible = this.state.uriListVisible;
@@ -160,6 +235,7 @@ class StatsChartOptionsBar extends React.Component {
         this.setState({ uriListVisible: visible });
     }
 
+    // set date onchange
     setDate = (e) => {
         if (e.target.id === 'start-date') {
             this.startDate = e.target.value;
@@ -167,13 +243,26 @@ class StatsChartOptionsBar extends React.Component {
             this.endDate = e.target.value;
         }
     }
-
+    
+    // apply and process custom filters and send result to the line chart.
     handleApply = () => {
         console.log(this.selectedUri);
         console.log(this.startDate);
         console.log(this.endDate);
+        if (this.endDate === '' || this.startDate === '' || this.selectedUri.length === 0) {
+            alert('Error! Some information is empty!');
+            return null;
+        }
+        if (this.endDate < this.startDate) {
+            alert("Error! End date is greater than start date!");
+            return null;
+        }
         this.setState({ applyLoading: true });
-        // send new request to backend server to fetch data now ...
+        setTimeout(() => {
+            let result = getDataFromTimeRange(this.startDate, this.endDate, this.selectedUri, this.props.data);
+            this.props.lineHandler(result);
+            this.setState({ applyLoading: false });
+        }, 600); 
     }
 
     render() {
@@ -273,6 +362,127 @@ class StatsChartOptionsBar extends React.Component {
             </div>
         );
     }
+}
+
+// get a list of different uris from data that fetched from the database.
+function getUriList(data) {
+    let uriList = [];
+    if (data) {
+        data.forEach((row) => {
+            let uri = row.uri;
+            // uriList acts as set.
+            if (uriList.indexOf(uri) === -1) {
+                uriList.push(uri);
+            }
+        });
+    }
+    return uriList;
+}
+
+// summarize all uris with the total number of requests received so far.
+function getSummarizedData(data) {
+    let resultArray = null;
+    if (data) {
+        let result = {};
+        data.forEach(row => {
+            let uri = row.uri;
+            if (result[uri]) {
+                result[uri] += 1;
+            } else {
+                result[uri] = 1;
+            }
+        });
+        resultArray = [];
+        Object.keys(result).forEach(uri => {
+            resultArray.push({
+                uri: uri,
+                total: result[uri],
+            });
+        });
+        resultArray.sort((a, b) => {
+            if (a.total < b.total)
+                return 1;
+            if (a.total > b.total)
+                return -1;
+            return 0;
+        });
+        return resultArray;
+    }
+    return null; 
+}
+
+// get total request number on each day for each requested uri from the given time range.
+function getDataFromTimeRange(start, end, requestedUri, data) {
+    if (!data) {
+        return null;
+    }
+    let startDateStr = start.toString().split('-').join('.');
+    let startDate = new Date(startDateStr);
+    let unixStart = startDate.getTime();
+    let endDateStr = end.toString().split('-').join('.');
+    let endDate = new Date(endDateStr);
+    endDate.setDate(endDate.getDate() + 1);
+    let unixEnd = endDate.getTime();
+    let numDays = 0;
+
+    let result = {};
+    result.data = [];
+    result.labels = [];
+    result.unixTimeLabels = [];
+
+    let current = new Date(startDateStr);
+    while (current <= endDate) {
+        ++numDays;
+        let label = `${current.getMonth() + 1}-${current.getDate()}`;
+        result.labels.push(label);
+        result.unixTimeLabels.push(current.getTime());
+        current.setDate(current.getDate() + 1);
+    }
+    numDays -= 1;
+    // console.log('num day == ' + numDays);
+
+    let zeros = [];
+    for (let i = 0; i < numDays; ++i)
+        zeros.push(0);
+
+    requestedUri.forEach(uri => {
+        result.data.push({
+            name: uri,
+            traffic: [...zeros],
+        });
+    });
+
+    let unixTimeRange = result.unixTimeLabels;
+
+    for (let i = 0; i < data.length; ++i) {
+        let unixTime = data[i].utime * 1000;
+        if (unixTime < unixStart || unixTime >= unixEnd) {
+            // out of range, skip to next data row.
+            continue;
+        }
+
+        let uri = data[i].uri;
+        // console.log('on i = ' +  i + '  ' + uri);
+        for (let j = 0; j < numDays; ++j) {
+            let current = unixTimeRange[j];
+            let next = unixTimeRange[j + 1];
+            // console.log(`${current} ${unixTime} ${next}`);
+            if (unixTime >= current && unixTime < next) {
+                // console.log('match time');
+                for (let k = 0; k < requestedUri.length; ++k) {
+                    if (uri === requestedUri[k]) {
+                        result.data[k].traffic[j] += 1;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+    result.labels.pop();
+    result.unixTimeLabels.pop();
+    console.log(result);
+    return result;
 }
 
 export default TrafficStatistic;

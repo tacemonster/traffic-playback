@@ -5,8 +5,10 @@
 .statTable {
     max-height: 60vh;
     overflow: auto;
+    overflow-x: hidden;
     width: 90%;
     margin: 30px auto 20px;
+    word-break: break-word;
 }
 
 .chartContainer {
@@ -21,7 +23,7 @@
     clear: both;
     font-weight: 400;
     white-space: normal;
-    word-break: break-all;
+    word-break: break-word;
 }
 .item:hover {
     color: #16181b;
@@ -41,9 +43,10 @@
     width: 100%;
 }
 .dropdownMenu {
-    max-height: 40vh;
+    max-height: 45vh;
     width: 300px;
     overflow: auto;
+    overflow-x: hidden;
 }
 .optionContainer {
     margin: 25px 20px 20px;
