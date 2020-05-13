@@ -42,3 +42,15 @@ link:hover {
 .yellow {
   color: #ffab00;
 }
+
+.generic-heading {
+  font-size: 2em;
+}
+
+.row-custom {
+  height: 80px;
+}
+
+.row-custom:hover {
+  background-color: gainsboro;
+}
