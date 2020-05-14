@@ -1,0 +1,12 @@
+form {
+  margin-bottom: 10px;
+}
+
+label {
+  width: 15%;
+  padding-right: 0.5em; 
+}
+
+input {
+  width: 35%;
+}
