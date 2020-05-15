@@ -4,9 +4,11 @@ import TemplateStyles from "../TemplateStyles.js";
 //This function will most likely get its own .js file since I anticipate
 // we may have additional HTTPServiceXXXXXX Components, but for now it is parked
 //here.
-function sendRequest(url, data, HTTPServiceClient) {
+function sendRequest(route, data, HTTPServiceClient) {
   let request = new XMLHttpRequest();
-  alert("Send request function in progress");
+  request.open("POST", route);
+  request.send(JSON.stringify(data));
+  alert("Send request function in progress.This is a reminder :)");
 }
 
 //This button onClick method sends a request to the server. The server's response
@@ -18,7 +20,7 @@ function HTTPServiceButton(props) {
     <button
       HTTPServiceClient={props.HTTPServiceClient}
       onClick={() => {
-        sendRequest(props.url, props.data);
+        sendRequest(props.route, props.data);
       }}
       className={TemplateStyles.HTTPServiceButton}
     >

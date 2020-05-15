@@ -2,9 +2,11 @@
 //to the client. An instance of this class will be part of the playback's component state.
 // More elaborate descrptions avsailable below.
 class HTTPClientEndPoint {
-  constructor() {
+  constructor(setStateMethod) {
     //this.setState holds a reference to the state object
+    this.setState = setStateMethod;
     this.keyHandlerStore = {};
+    //init is called to pull data needed to init the app from the
   }
 
   //This function maps key (most likely urls) -> handler functions
@@ -17,14 +19,9 @@ class HTTPClientEndPoint {
     //Here I check that the url/key is a string type and that
     //handlerfunction is indeed a function object.
     let urlTypeCheck = typeof key === "string";
-    let functionTypeCheck =
-      handlerFunction !== undefined &&
-      handlerFunction instanceof Object &&
-      handlerFunction.prototype === Function.prototype;
 
     //if both checks pass, then assign the function as a callback to the handlerstore.
-    if (urlTypeCheck && functionTypeCheck)
-      this.keyHandlerStore[key] = handlerFunction;
+    if (urlTypeCheck) this.keyHandlerStore[key] = handlerFunction;
   }
 
   processHTTPresponse(key, data) {
@@ -45,6 +42,10 @@ class HTTPClientEndPoint {
       handlerFunction(data); //pass off data to handlerfunction which should update playback state.
     }
   }
+
+  init = () => {
+    this.keyHandlerStore["/init"]();
+  };
 }
 
 export default HTTPClientEndPoint;
