@@ -15,6 +15,7 @@ import Navbar from "../Nav/Navbar";
 import HTTPClientEndPoint from "../ComponentTemplates/HTTPServices/HTTPClientEndPoint";
 import { func } from "prop-types";
 import TrafficStatistic from '../ComponentTemplates/StatisticSite/TrafficStatistic';
+import RealTimeMonitor from '../ComponentTemplates/StatisticSite/RealTime';
 
 //This class reports URLS and URL->[job list mappings] for the playback app.
 class UrlJobInfo {
@@ -227,6 +228,7 @@ class PlayBack extends React.Component {
               <div>Home Placeholder</div>
             </Route>
             <Route exact path="/stats" component={TrafficStatistic}></Route>
+            <Route exact path='/realtime' component={RealTimeMonitor}></Route>
             {this.buildDynamicRoutes()}
           </Switch>
         </Body>

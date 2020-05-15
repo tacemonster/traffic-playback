@@ -13,6 +13,7 @@ class App extends React.Component {
             { title: "In Progress Jobs", route: "/inprogressjobs" },
             { title: "Completed Jobs", route: "/completedjobs" },
             { title: 'Statistic', route: '/stats' },
+            { title: 'Real Time', route: '/realtime' },
           ]}
         />
       </div>

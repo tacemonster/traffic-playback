@@ -6,7 +6,7 @@
     max-height: 60vh;
     overflow: auto;
     overflow-x: hidden;
-    width: 90%;
+    width: 100%;
     margin: 30px auto 20px;
     word-break: break-word;
 }
@@ -57,4 +57,8 @@
 }
 .applyBtn {
     width: 100%;
+}
+
+.alertBox {
+    margin: 10px auto 5px;
 }

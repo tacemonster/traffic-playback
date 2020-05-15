@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Alert from 'react-bootstrap/Alert';
 import style from './TrafficStatistic.module.css';
 import { Line } from 'react-chartjs-2';
 
@@ -20,9 +21,13 @@ class TrafficStatistic extends React.Component {
     componentDidMount = () => {
         fetch('http://ec2-54-152-230-158.compute-1.amazonaws.com:8000/api/play')
             .then((res) => {
-                return res.json().then((json) => {
-                    return res.ok ? json : Promise.reject(json);
-                });
+                if (res.json) {
+                    return res.json().then((json) => {
+                        return res.ok ? json : Promise.reject(json);
+                    });
+                } else {
+                    Promise.reject('No JSON exist!');
+                }
             })
             .then((result) => {
                 console.log(result);
@@ -36,7 +41,7 @@ class TrafficStatistic extends React.Component {
     render() {
         return (
             <div>
-                <h1 className={style.title}>Traffic Statistic</h1>
+                <h1 className={style.title}>My Traffic Statistics</h1>
                 <hr></hr>
                 <StatsTable data={this.state.data} />
                 <StatsChart data={this.state.data} />
@@ -83,7 +88,7 @@ class StatsTable extends React.Component {
                     <Table striped bordered hover size="sm" variant="dark">
                         <thead>
                             <tr>
-                                <th>URI</th>
+                                <th >URI</th>
                                 {/* <th>Domain</th> */}
                                 <th style={{minWidth: '90px'}}>Total Requests</th>
                             </tr>
@@ -104,6 +109,26 @@ const lineColors = [
     'rgb(100, 53, 201)',
     'rgb(33, 133, 208)',
 ];
+
+const options = {
+    responsive: true,
+    scales: {
+        xAxes: [{
+            display: true,
+            scaleLabel: {
+                display: true,
+                labelString: 'Dates'
+            },
+        }],
+        yAxes: [{
+            display: true,
+            scaleLabel: {
+                display: true,
+                labelString: '# of Requests'
+            }
+        }]
+    }
+};
 
 class StatsChart extends React.Component {
     constructor(props) {
@@ -157,7 +182,7 @@ class StatsChart extends React.Component {
                     lineHandler={this.handleUpdate}
                 />
                 <hr></hr>
-                <Line data={this.state.lineData} />
+                <Line data={this.state.lineData} options={options} />
             </div>
         );
     }
@@ -171,6 +196,8 @@ class StatsChartOptionsBar extends React.Component {
             uriList: ['/home', '/home/uri', '/traffic/abc/dsassfcsaaaaaaaaa', '/hello', '/hi', '/abc'],
             uriListVisible: [true, true, true, true, true, true],
             applyLoading: false,
+            error: false,
+            errorText: 'Something wrong!',
         };
         this.maxSelectedUri = 5;
         this.selectedUri = [];
@@ -206,11 +233,13 @@ class StatsChartOptionsBar extends React.Component {
                     // allow maximum of 5 uris selected.
                     if (this.selectedUri.length >= this.maxSelectedUri) {
                         event.target.checked = false;
-                        alert('Only maximum of 5 URIs allowed');
+                        this.setState({
+                            error: true,
+                            errorText: 'Only maximum of 5 URIs allowed',
+                        });
                     } else {
                         this.selectedUri.push(uri);
                     }
-                    
                 } else {
                     let index = this.selectedUri.indexOf(uri);
                     if (index > -1) {
@@ -219,7 +248,7 @@ class StatsChartOptionsBar extends React.Component {
                 }
             }
         }
-    }
+    };
 
     // handle uri filter in the uri dropdown.
     handleFilter = (event) => {
@@ -233,7 +262,7 @@ class StatsChartOptionsBar extends React.Component {
             }
         }
         this.setState({ uriListVisible: visible });
-    }
+    };
 
     // set date onchange
     setDate = (e) => {
@@ -242,27 +271,45 @@ class StatsChartOptionsBar extends React.Component {
         } else {
             this.endDate = e.target.value;
         }
-    }
-    
+    };
+
     // apply and process custom filters and send result to the line chart.
     handleApply = () => {
         console.log(this.selectedUri);
         console.log(this.startDate);
         console.log(this.endDate);
         if (this.endDate === '' || this.startDate === '' || this.selectedUri.length === 0) {
-            alert('Error! Some information is empty!');
+            this.setState({
+                error: true,
+                errorText: 'Some information is empty.'
+            });
             return null;
         }
         if (this.endDate < this.startDate) {
-            alert("Error! End date is greater than start date!");
+            this.setState({
+                error: true,
+                errorText: 'Error! End date is greater than start date!',
+            });
             return null;
         }
         this.setState({ applyLoading: true });
         setTimeout(() => {
-            let result = getDataFromTimeRange(this.startDate, this.endDate, this.selectedUri, this.props.data);
-            this.props.lineHandler(result);
+            if (this.props.data) {
+                let result = getDataFromTimeRange(this.startDate, this.endDate, this.selectedUri, this.props.data);
+                this.props.lineHandler(result);
+                this.setState({ error: false });
+            } else {
+                this.setState({
+                    error: true,
+                    errorText: 'Internal Error! Database Not Connected!',
+                });
+            }
             this.setState({ applyLoading: false });
-        }, 600); 
+        }, 600);
+    };
+
+    handleAlert = () => {
+        this.setState({ error: false });
     }
 
     render() {
@@ -270,7 +317,10 @@ class StatsChartOptionsBar extends React.Component {
         for (let i = 0; i < this.state.uriList.length; ++i) {
             let uri = this.state.uriList[i];
             content.push(
-                <div className={this.state.uriListVisible[i] ? style.item : style.itemNone} key={uri}>
+                <div
+                    className={this.state.uriListVisible[i] ? style.item : style.itemNone}
+                    key={uri}
+                >
                     <Form.Check
                         onChange={this.handleCheckBox}
                         type={'checkbox'}
@@ -359,6 +409,18 @@ class StatsChartOptionsBar extends React.Component {
                         </Button>
                     </Col>
                 </Row>
+
+                {this.state.error && (
+                    <Alert
+                        variant="danger"
+                        onClose={this.handleAlert}
+                        dismissible
+                        className={style.alertBox}
+                    >
+                        <Alert.Heading>Error</Alert.Heading>
+                        <p>{this.state.errorText}</p>
+                    </Alert>
+                )}
             </div>
         );
     }
