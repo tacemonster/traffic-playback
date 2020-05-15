@@ -10,7 +10,9 @@ class App extends React.Component {
           navLinks={[
             { title: "Home", route: "/" },
             { title: "In Progress Jobs", route: "/inprogressjobs" },
-            { title: "Completed Jobs", route: "/completedjobs" }
+            { title: "Completed Jobs", route: "/completedjobs" },
+            { title: 'Statistic', route: '/stats' },
+            { title: 'Real Time', route: '/realtime' },
           ]}
         />
       </div>
