@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import TemplateStyles from "../ComponentTemplates/TemplateStyles";
 
 //This stateless  component returns the navbutton of the navbar.
 function NavButton(props) {
@@ -68,21 +69,17 @@ class NavBar extends React.Component {
     var nav_contents = this.state.extended ? (
       <ExtendedNavContents
         navLinks={this.props.navLinks}
-        buttonClass={"nav-button"}
+        buttonClass={TemplateStyles.NavButton}
         navDrawerButtonClick={this.navDrawerButtonClick}
       />
     ) : (
       <RetractedNavContents
-        buttonClass="nav-button"
+        buttonClass={TemplateStyles.NavButton}
         navDrawerButtonClick={this.navDrawerButtonClick}
       />
     );
 
-    return (
-      <nav className={"navbar navbar-expand-xl fixed-top nav-bar-custom "}>
-        {nav_contents}
-      </nav>
-    );
+    return <nav className={TemplateStyles.NavBar}>{nav_contents}</nav>;
   }
 }
 

@@ -14,7 +14,7 @@ function RouteButtonTemplate(props) {
       onClick={() => {
         history.push(props.route || "/");
       }}
-      className={TemplateStyles.NavListButton}
+      className={TemplateStyles.RouteButton}
     >
       {props.children || "Select"}
     </button>

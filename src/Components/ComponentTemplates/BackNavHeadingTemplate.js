@@ -1,17 +1,12 @@
 import React from "react";
 import BackNavButton from "./BackNavButton";
+import TemplateStyles from "./TemplateStyles";
 
 function BackNavHeadingTemplate(props) {
   return (
-    <div className="row justify-content-end">
+    <div className={TemplateStyles.BackNavHeadingRow}>
+      <h1 className={TemplateStyles.BackNavHeading}>{props.children}</h1>
       <BackNavButton />
-      <h1
-        className={
-          props.classNameGenericHeading + "col-12 generic-heading yellow"
-        }
-      >
-        {props.children}
-      </h1>
     </div>
   );
 }

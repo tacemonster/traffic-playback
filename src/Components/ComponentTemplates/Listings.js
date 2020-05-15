@@ -1,6 +1,6 @@
 import React from "react";
-import GenericStyles from "./TemplateStyles";
 import RouteButtonTemplate from "./RouteButtonTemplate";
+import TemplateStyles from "./TemplateStyles";
 
 //This component generates a single job listing which consists of text,
 //and several buttons we can use to perform actions on that particular job listing.
@@ -19,9 +19,9 @@ function NavListing(props) {
   });
 
   return (
-    <section className={"row justify-center row-custom"}>
-      <div className={"col-6 col-md-4"}> {props.value}</div>
-      <div className={"col-12 col-md-4 row justify-center"}>{buttons}</div>
+    <section className={TemplateStyles.customRow}>
+      <div className={TemplateStyles.NavHeadingText}> {props.value}</div>
+      <div className={TemplateStyles.NavHeadingButtons}>{buttons}</div>
     </section>
   );
 }

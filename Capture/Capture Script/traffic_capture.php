@@ -1,8 +1,4 @@
 <?php
-
-//Begin script configuration block
-$starttime = 0;
-$endtime = PHP_INT_MAX;
 //Database configuration
 $servername = "localhost";
 $username = "traffic";
@@ -64,8 +60,29 @@ foreach (getallheaders() as $name => $value)
 if(empty($headers))
 	$headers = "INVALID:HEADERS";
 
-//if the time of the current request falls outside of the timeframe, exit the script without logging.
-if($requesttime < $starttime && $requesttime > $endtime)
+$job_id = "";
+$sql = "SELECT * from job;";
+if($result = $conn->query($sql))
+{
+	while($row = $result->fetch_assoc())
+	{
+		if(	((!$row['jobStart'] && !$row['jobStop']) || ($row['jobStart'] < $requesttime && $row['jobStop'] > $requesttime)) &&
+			(!$row['secure'] || preg_match($row['secure'], $secure)) &&
+			(!$row['protocol'] || preg_match($row['protocol'], $proto)) &&
+			(!$row['host'] || preg_match($row['host'], $host)) && 
+			(!$row['uri'] || preg_match($row['uri'], $uri)) &&
+			(!$row['method'] || preg_match($row['method'], $method)) && 
+			(!$row['sourceip'] || preg_match($row['sourceip'], $source_ip)))
+		{
+			if(!$job_id)
+				$job_id = $row['jobID'];
+			else
+				$job_id .= "," . $row['jobID'];
+		}
+	}
+}
+
+if($job_id == "")
 {
 	$conn->close();
 	die();
@@ -74,9 +91,9 @@ if($requesttime < $starttime && $requesttime > $endtime)
 $post = file_get_contents('php://input');
 
 
-
 //Construct our sql query to log the request to the database.
-$sql = "INSERT INTO raw (utime, secure, protocol, host, uri, method, header, reqbody, sourceip) VALUES ($requesttime, '$secure', '$proto', '$host', '$uri', '$method', '$headers', '$post', '$source_ip');";
+$sql = "INSERT INTO raw (utime, secure, protocol, host, uri, method, header, reqbody, sourceip, jobID) VALUES ($requesttime, '$secure', '$proto', '$host', '$uri', '$method', '$headers', '$post', '$source_ip', '$job_id');";
+//echo($sql);
 //Execute the sql query and handle any errors.
 if(!$conn->query($sql))
 	echo("Query Error" . $conn->error . "<br>");
