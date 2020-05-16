@@ -13,6 +13,7 @@ import BackNavHeadingTemplate from "../ComponentTemplates/BackNavHeadingTemplate
 import NavListing from "../ComponentTemplates/NavListing";
 import Navbar from "../Nav/Navbar";
 import HTTPClientEndPoint from "../ComponentTemplates/HTTPServices/HTTPClientEndPoint";
+import ConfigureJob from "../ConfigureJob/configureJob";
 import { func } from "prop-types";
 import TrafficStatistic from '../ComponentTemplates/StatisticSite/TrafficStatistic';
 import RealTimeMonitor from '../ComponentTemplates/StatisticSite/RealTime';
@@ -153,8 +154,9 @@ class PlayBack extends React.Component {
           {urlJobsList.map(jobID => {
             return (
               <NavListing
+
                 value={jobID}
-                NavButtons={[{ name: "Configure", route: route }]}
+                NavButtons={[{ name: "Configure", route:  "/" + url_iterator + urlJob + "configure" }]}
                 HTTPButtons={[
                   {
                     name: "Run Job",
@@ -196,6 +198,27 @@ class PlayBack extends React.Component {
       );
       routeList = routeList.concat(concatRoutes);
     }
+
+     ////build /configure job routes START--------------------
+     for (let i in completedUrls) {
+      url_iterator = completedUrls[i];
+      let urlJobsList = this.state.CompletedJobsUrls.getUrlJobs(url_iterator); //get all completed jobs assigned to a url
+      
+      for (let j in urlJobsList){ 
+        let route = "/" + url_iterator + urlJobsList[j] + "configure";
+        concatRoutes = (
+          <Route exact path={route}>
+            <ConfigureJob />
+            <NavListing
+              buttons={[{ name: "Run", route: "/inprogressjobs" }]}
+            />
+          </Route>
+        );
+        routeList = routeList.concat(concatRoutes);
+      }
+    }
+    ////build /configure job routes FINISH---------------------
+
     //Return the list of all routes and their assigned components for rendering.
     return <React.Fragment>{routeList}</React.Fragment>;
   };
