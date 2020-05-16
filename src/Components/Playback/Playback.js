@@ -10,10 +10,13 @@ import {
 
 import Body from "../Body/BodyModule";
 import BackNavHeadingTemplate from "../ComponentTemplates/BackNavHeadingTemplate";
-import NavListing from "../ComponentTemplates/Listings";
+import NavListing from "../ComponentTemplates/NavListing";
 import Navbar from "../Nav/Navbar";
 import HTTPClientEndPoint from "../ComponentTemplates/HTTPServices/HTTPClientEndPoint";
 import ConfigureJob from "../ConfigureJob/configureJob";
+import { func } from "prop-types";
+import TrafficStatistic from '../ComponentTemplates/StatisticSite/TrafficStatistic';
+import RealTimeMonitor from '../ComponentTemplates/StatisticSite/RealTime';
 
 //This class reports URLS and URL->[job list mappings] for the playback app.
 class UrlJobInfo {
@@ -66,16 +69,20 @@ class PlayBack extends React.Component {
     this.state = {
       //Completed and InProgress URLS and job lists will be supplied by the database
       //For now they are hardcoded in.
-      CompletedJobsUrls: new UrlJobInfo({
-        "www.google.com": ["1-x-x-placeholder", "2-x-x-placeholder"],
-        "www.google2.com": ["1-x-x-placeholder", "2-x-x-placeholder"],
-        "www.google3.com": ["1-x-x-placeholder"]
-      }),
-      InProgressJobsUrls: new UrlJobInfo({
-        "www.facebook.com": ["1-2-x-placeholder", "2-x-x-placeholder"],
-        "www.dogpile.com": ["1-x-x-placeholder", "2-x-x-placeholder"]
-      })
+      CompletedJobsUrls: null,
+      InProgressJobsUrls: null,
+      HTTPService: new HTTPClientEndPoint(this.setState)
     };
+
+    this.state.HTTPService.registerUrlStateHandler("/init", function() {
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET", "/run");
+      xhr.send("");
+
+      return null;
+    });
+
+    this.setState(this.state.HTTPService.init());
   }
 
   //This app builds many dynamic routes.
@@ -101,7 +108,8 @@ class PlayBack extends React.Component {
             <NavListing
               listingTitle={"Completed Captured Jobs"}
               value={url}
-              buttons={[{ name: "Select", route: route }]}
+              NavButtons={[{ name: "Select", route: route }]}
+              HTTPButtons={[]}
             />
           );
         })}
@@ -121,7 +129,8 @@ class PlayBack extends React.Component {
             <NavListing
               listingTitle={"Completed Captured Jobs"}
               value={url}
-              buttons={[{ name: "Select", route: route }]}
+              NavButtons={[{ name: "Select", route: route }]}
+              HTTPButtons={[]}
             />
           );
         })}
@@ -142,13 +151,18 @@ class PlayBack extends React.Component {
           <BackNavHeadingTemplate>
             {"Completed Jobs For URL " + url_iterator}
           </BackNavHeadingTemplate>
-          {urlJobsList.map(urlJob => {
+          {urlJobsList.map(jobID => {
             return (
               <NavListing
-                value={urlJob}
-                buttons={[
-                  { name: "Run", route: route },
-                  { name: "Configure", route: "/" + url_iterator + urlJob + "configure" }
+
+                value={jobID}
+                NavButtons={[{ name: "Configure", route:  "/" + url_iterator + urlJob + "configure" }]}
+                HTTPButtons={[
+                  {
+                    name: "Run Job",
+                    route: "/run",
+                    data: { url: url_iterator, id: jobID }
+                  }
                 ]}
               />
             );
@@ -172,10 +186,11 @@ class PlayBack extends React.Component {
             return (
               <NavListing
                 value={urlJob}
-                buttons={[
+                NavButtons={[
                   { name: "Cancel", route: route },
                   { name: "Pause", route: route }
                 ]}
+                HTTPButtons={[]}
               />
             );
           })}
@@ -246,6 +261,8 @@ class PlayBack extends React.Component {
             <Route exact path="/">
               <div>Home Placeholder</div>
             </Route>
+            <Route exact path="/stats" component={TrafficStatistic}></Route>
+            <Route exact path='/realtime' component={RealTimeMonitor}></Route>
             {this.buildDynamicRoutes()}
           </Switch>
         </Body>
