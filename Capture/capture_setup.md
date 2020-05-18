@@ -19,6 +19,7 @@ https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysq
 
 ##Configure NGINX Reverse Proxy
 
+Begin by setting up the nginx configuration to function as a reverse proxy for the http(s) website or service you wish to capture.
 
 **Example nginx server directives**
 
