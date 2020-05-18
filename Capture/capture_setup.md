@@ -1,6 +1,6 @@
-#Setup Traffic Capture
+# Setup Traffic Capture
 
-##With existing NGINX proxy:
+## With existing NGINX proxy:
 
 Setup a LAMP (apache) or LEMP (nginx) server to host traffic capture.
 
@@ -10,14 +10,14 @@ https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mys
 **LEMP:**
 https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04
 
-##Without existing NGINX proxy:
+## Without existing NGINX proxy:
 
 Setup a LEMP server to function as a reverse proxy and host traffic capture.
 
 **LEMP:**
 https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04
 
-##Configure NGINX Reverse Proxy
+## Configure NGINX Reverse Proxy
 
 Begin by setting up the nginx configuration to function as a reverse proxy for the http(s) website or service you wish to capture.
 
@@ -88,9 +88,9 @@ server{
 
 If you are editing an existing reverse proxy configuration, the important part here is to use the nginx-mirror module `mirror /tpt-mirror` in your reverse proxy location handler, and create a  `location /tpt-mirror` configuration block to dispatch the request for capture logging.
 
-##TODO: Should probably install & configure the database & database user here.
+## TODO: Should probably install & configure the database & database user here.
 
-##Install & configure capture script
+## Install & configure capture script
 
 The traffic capture PHP script simply has to be hosted so its accessible to the NGINX reverse proxy. The LEMP installation process sets up NGINX + php_fpm or you can use an apache-based LAMP stack instead.
 
