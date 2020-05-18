@@ -1,10 +1,12 @@
 //This class will be responsible for processing data sent from the server
 //to the client. An instance of this class will be part of the playback's component state.
 // More elaborate descrptions avsailable below.
+
+import Routes from "../../Playback/Routes";
 class HTTPClientEndPoint {
-  constructor(setStateMethod) {
+  constructor(setState) {
     //this.setState holds a reference to the state object
-    this.setState = setStateMethod;
+    this.setState = setState;
     this.keyHandlerStore = {};
     //init is called to pull data needed to init the app from the
   }
@@ -30,21 +32,22 @@ class HTTPClientEndPoint {
     // I don't know if there are scenarious where data
     // could be empty and yet we would still like to run
     //  a particular handler mapped to a key.
+    let success = false; // used to return the success of promises/handlerfunction calls
     let keyTypeCheck = typeof key === "string";
     let handlerFunction = this.keyHandlerStore[key];
     let functionTypeCheck =
-      handlerFunction !== undefined &&
-      handlerFunction instanceof Object &&
-      handlerFunction.prototype === Function.prototype;
+      handlerFunction !== undefined && handlerFunction instanceof Object;
 
     //if key and handlerfunction are valid.,
     if (keyTypeCheck && functionTypeCheck) {
-      handlerFunction(data); //pass off data to handlerfunction which should update playback state.
+      success = handlerFunction(data); //pass off data to handlerfunction which should update playback state.
+
+      return success;
     }
   }
 
   init = () => {
-    this.keyHandlerStore["/init"]();
+    return this.keyHandlerStore[Routes.init]();
   };
 }
 

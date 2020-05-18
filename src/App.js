@@ -9,8 +9,11 @@ class App extends React.Component {
         <PlayBack
           navLinks={[
             { title: "Home", route: "/" },
-            { title: "In Progress Jobs", route: "/inprogressjobs" },
-            { title: "Completed Jobs", route: "/completedjobs" }
+
+            {
+              title: "Run A Completed Capture",
+              route: "/runcapture"
+            }
           ]}
         />
       </div>
