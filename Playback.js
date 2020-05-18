@@ -1,17 +1,17 @@
 // NOTE: this prototype will probably end up being exported as a module down the line.
-var http = require('http') // Offers various http capabilities.
-var https = require('https')
-var mysql = require('mysql') // DB driver.
-var sorted = require('sorted-array-functions');
-var requests_cache = {}
+let http = require('http') // Offers various http capabilities.
+let https = require('https')
+let mysql = require('mysql') // DB driver.
+let sorted = require('sorted-array-functions');
+let requests_cache = {}
 
-var base_request_time = 0
-var base_local_time = 0;
+let base_request_time = 0
+let base_local_time = 0;
 
-var hooks = [] // Keeps track of all the hooks
+let hooks = [] // Keeps track of all the hooks
 
 // Exporting the events and the register_hook function so plugins can use it
-var methods = {
+let methods = {
     hook_events: hook_events = {
         PRE_REQUEST: 'pre-request',
         REQUEST_CALLBACK: 'request callback',
@@ -25,7 +25,7 @@ module.exports = methods
 
 // This will bring in all of the plugins in the files referred to in the index.js file in the plugins directory
 // When this occurs, all the register_hook functions in the plugin files will be executed
-var plugins = require('./plugins') // Ask Berin if this could lead to any security vulnerabilities?
+let plugins = require('./plugins') // Ask Berin if this could lead to any security vulnerabilities?
 
 // Loops through all pre-request hooks and executes the functions associated with them
 // Exposes a read-only version of the options (information from the database), allows plugin developers to edit
@@ -71,18 +71,18 @@ function dispatch_request(options){
     //request options url path and etc
     console.log(Date.now())
 
-    var req_headers = new Object()
-    var header_array = options.header.split("\r\n")
+    let req_headers = new Object()
+    let header_array = options.header.split("\r\n")
 
-    for (var header in header_array)
+    for (let header in header_array)
     {
-        var name_val = header_array[header].split(":::::")
+        let name_val = header_array[header].split(":::::")
         if (name_val[0] != "")
             req_headers[name_val[0]] = name_val[1];
     }
 
-    var req_options = {"host":"localhost", "setHost":false, "path":options.uri, "method":options.method, "headers":req_headers, "port":8080}
-    var editable_options = {
+    let req_options = {"host":"localhost", "setHost":false, "path":options.uri, "method":options.method, "headers":req_headers, "port":8080}
+    let editable_options = {
         'secure': options.secure,
         'reqbody': options.reqbody,
         'send_request': true
@@ -91,8 +91,8 @@ function dispatch_request(options){
 
     if(editable_options.send_request === true) {
         //Select the correct request class
-        var webreq = editable_options['secure'] ? https : http
-        var req = webreq.request(req_options, (res) => {
+        let webreq = editable_options['secure'] ? https : http
+        let req = webreq.request(req_options, (res) => {
             // Code for testing
             // res.setEncoding("utf-8")
             // res.on('data', (data)=>{/*console.log(data)*/})
@@ -109,14 +109,14 @@ function dispatch_request(options){
 }
 
 //Connection settings like username, password, and etc.
-var connection_arguments = {
+let connection_arguments = {
     host:"localhost",
     user:"traffic",
     password:"12345",
     database:"trafficDB"}
 
 // Attempt to create a connection using the arguments above.
-var connection = mysql.createConnection(connection_arguments)
+let connection = mysql.createConnection(connection_arguments)
 
 //Issue a static GET query for the prototype.
 connection.query('SELECT * FROM raw', function (error, results, fields) {
@@ -130,7 +130,7 @@ connection.query('SELECT * FROM raw', function (error, results, fields) {
     base_request_time = results[0].utime * 1000
     console.log("Base Time:")
     console.log("Job: " + base_request_time)
-    for (var result in results)
+    for (let result in results)
     {
         //Using let variables for block scoping and to avoid hoisting shennanigans.
         let row_reference = results[result] //This references a row which desribes a request
