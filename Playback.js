@@ -1,12 +1,23 @@
 // NOTE: this prototype will probably end up being exported as a module down the line.
-let http = require('http') // Offers various http capabilities.
-let https = require('https')
-let mysql = require('mysql') // DB driver.
-let sorted = require('sorted-array-functions');
+const http = require('http') // Offers various http capabilities.
+const https = require('https')
+const mysql = require('mysql') // DB driver.
+const sorted = require('sorted-array-functions');
 let requests_cache = {}
 
 let base_request_time = 0
 let base_local_time = 0;
+
+// Command Line Args
+const argv = require('yargs')
+    .scriptName("Playback")
+    .usage('$0 <cmd> [args]')
+    .command('jobs', 'get the list of jobs available to be played back', (yargs) => {},
+        function(argv) {
+            console.log('a')
+        })
+    .help()
+    .argv
 
 let hooks = [] // Keeps track of all the hooks
 
@@ -109,11 +120,12 @@ function dispatch_request(options){
 }
 
 //Connection settings like username, password, and etc.
-let connection_arguments = {
+const connection_arguments = {
     host:"localhost",
     user:"traffic",
     password:"12345",
-    database:"trafficDB"}
+    database:"trafficDB"
+}
 
 // Attempt to create a connection using the arguments above.
 let connection = mysql.createConnection(connection_arguments)
