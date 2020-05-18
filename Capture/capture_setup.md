@@ -23,6 +23,10 @@ Begin by setting up the nginx configuration to function as a reverse proxy for t
 
 **Example nginx server directives**
 
+***
+Disclaimer: These server directives are a simple demonstration of traffic capture functionality and are not guaranteed to be fully functional or secure in a production environment. Use your best judgement and ensure your implementation is correct.
+***
+
 *http:*
 
 ``` sh
