@@ -191,8 +191,7 @@ if(args._.includes('playback')) {
 
         let req_headers = new Object();
         let header_array = options.header.split("\r\n");
-        let cnt = 0;
-        for (i = 0; i < header_array.length; i += 2)
+        for (i = 0; i < header_array.length - 1; i += 2)
         {
             req_headers[header_array[i]] = header_array[i+1];
         }
@@ -206,8 +205,11 @@ if(args._.includes('playback')) {
         pre_request_hook(options, editable_options, req_options);
 
         if(editable_options.send_request === true) {
+	    console.log(req_options);
+	    console.log(editable_options);
             //Select the correct request class
             let webreq = editable_options['secure'] ? https : http
+		webreq = https;
             let req = webreq.request(req_options, (res) => {
                 // Code for testing
                 // res.setEncoding("utf-8")
