@@ -192,12 +192,9 @@ if(args._.includes('playback')) {
         let req_headers = new Object();
         let header_array = options.header.split("\r\n");
         let cnt = 0;
-        for (let header in header_array)
+        for (i = 0; i < header_array.length; i += 2)
         {
-			if(cnt % 2 == 0) {
-                req_headers[header_array[header]] = header_array[header+1];
-            }
-        	cnt = cnt + 1;
+            req_headers[header_array[i]] = header_array[i+1];
         }
 
         let req_options = {"host":cmd_options.hostname, "setHost":false, "path":options.uri, "method":options.method, "headers":req_headers, "port":8080};
