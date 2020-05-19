@@ -76,6 +76,7 @@ const args = require('yargs')
             connection.query('SELECT * FROM job;', function (error, results, fields) {
                 console.log(results);
             });
+            connection.end();
         })
     .command('playback', 'plays back captured traffic', (yargs) => {
         yargs.options('job-id', {
