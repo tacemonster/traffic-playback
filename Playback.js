@@ -78,9 +78,10 @@ const args = require('yargs')
     .command('jobs', 'get the list of jobs available to be played back', (yargs) => {},
         function(argv) {
             let connection = mysql.createConnection(connection_arguments);
-            connection.query('SELECT * FROM job', function (error, results, fields) {
+            connection.query('SELECT * FROM jobs;', function (error, results, fields) {
                 console.log(results);
             });
+            connection.end();
         })
     .command('playback', 'plays back captured traffic', (yargs) => {
         yargs.options('job-id', {
@@ -131,6 +132,9 @@ if(args._.includes('playback')) {
     let default_options = {
         verbose: 0,
         playbackSpeed: 1,
+        hostname: 'localhost',
+	port: 8080,
+	secure_port: 443
     };
 
     if(args.configFile !== null) {
