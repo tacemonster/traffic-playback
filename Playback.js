@@ -153,7 +153,7 @@ if(args._.includes('playback')) {
             console.log('Error encountered parsing JSON string from JSON argument');
             return;
         }
-        let cmd_options1 = Object.assign(cmd_options, data);
+        let cmd_options = Object.assign(cmd_options, data);
     }
 
     cmd_options = Object.assign(cmd_options, args);
@@ -229,7 +229,7 @@ if(args._.includes('playback')) {
     let connection = mysql.createConnection(connection_arguments)
 
     //Issue a static GET query for the prototype.
-    connection.query('SELECT * FROM raw', function (error, results, fields) {
+    connection.query('SELECT * FROM raw WHERE job = ' + '\'' + cmd_options.jobId + '\'', function (error, results, fields) {
         if (error)
             throw error;
 
@@ -244,8 +244,8 @@ if(args._.includes('playback')) {
         {
             //Using let variables for block scoping and to avoid hoisting shennanigans.
             let row_reference = results[result]; //This references a row which desribes a request
-        //Calculate the time to sleep by obtaining the current request's delta from its capture point
-        //Then subtracting a correction for a delta in local execution time.
+            //Calculate the time to sleep by obtaining the current request's delta from its capture point
+            //Then subtracting a correction for a delta in local execution time.
             let sleep_time = ((results[result].utime * 1000) - base_request_time) - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
 
             //This line dispatches a request after a timeout determined by sleep_time for a given row/request.
