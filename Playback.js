@@ -9,6 +9,7 @@ let hooks = []; // Keeps track of all the hooks
 
 let base_request_time = 0;
 let base_local_time = 0;
+let newest_request_time = 0;
 
 //Connection settings like username, password, and etc.
 const connection_arguments = {
@@ -17,6 +18,10 @@ const connection_arguments = {
     password:"12345",
     database:"trafficDB"
 }
+
+function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+   }
 
 // Exporting the events and the register_hook function so plugins can use it
 let methods = {
@@ -191,11 +196,11 @@ if(args._.includes('playback')) {
         let req_headers = new Object();
         let header_array = options.header.split("\r\n");
 
-        for (let header in header_array)
+        for (i = 0; i < header_array.length; i += 2)
         {
-            let name_val = header_array[header].split(":::::");
-            if (name_val[0] != "")
-                req_headers[name_val[0]] = name_val[1];
+
+            req_headers[header_array[i]] = header_array[i+1];    
+
         }
 
         let req_options = {"host":cmd_options.hostname, "setHost":false, "path":options.uri, "method":options.method, "headers":req_headers, "port":8080};
@@ -228,6 +233,50 @@ if(args._.includes('playback')) {
     // Attempt to create a connection using the arguments above.
     let connection = mysql.createConnection(connection_arguments)
 
+	let query = connection.query('SELECT * FROM raw;')
+	
+	query.on('error', function(err) {
+	})
+	.on('fields', function(fields) {
+	})
+	.on('result', function(row) {
+		//Must be our first row.
+		if(base_request_time == 0)
+		{
+	 		base_request_time = row.utime * 1000;
+    		
+    		
+    	}
+    	
+        let sleep_time = (row.utime * 1000) - base_request_time);
+        
+		sleep_time = sleep_time / cmd_options.playbackSpeed;
+		
+		sleep_time = sleep_time - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
+
+        //This line dispatches a request after a timeout determined by sleep_time for a given row/request.
+        console.log("delaying request " + row + "for " + sleep_time + "miliseconds.");
+        
+        newest_request_time = Date.now() + sleep_time;
+        
+        delay_request(sleep_time,row,dispatch_request,null);
+        
+        
+        if(newest_request_time > (Date.now() + 10000))
+        {
+        	connection.pause();
+        	
+        	while(newest_request_time > (Date.now() + 10000))
+        	{
+        		await sleep(10000/10);
+        	}
+        	
+        	connection.resume();
+        }
+	})
+	.on('end', function(){
+	});
+	
     //Issue a static GET query for the prototype.
     connection.query('SELECT * FROM raw WHERE job = ' + '\'' + cmd_options.jobId + '\'', function (error, results, fields) {
         if (error)
@@ -236,17 +285,18 @@ if(args._.includes('playback')) {
         //All requests will have their times subtracted by the time of the first request.
         //This is so we can shift all times back to zero.
         console.log(results[0]);
-        //Times from the database must be multiplied by 1000 to represent in milliseconds as opposed to seconds.milli
-        base_request_time = results[0].utime * 1000;
-        console.log("Base Time:");
-        console.log("Job: " + base_request_time);
+
         for (let result in results)
         {
             //Using let variables for block scoping and to avoid hoisting shennanigans.
             let row_reference = results[result]; //This references a row which desribes a request
             //Calculate the time to sleep by obtaining the current request's delta from its capture point
             //Then subtracting a correction for a delta in local execution time.
-            let sleep_time = ((results[result].utime * 1000) - base_request_time) - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
+            let sleep_time = (results[result].utime * 1000) - base_request_time);
+
+			sleep_time = sleep_time / cmd_options.playbackSpeed;
+			
+			sleep_time = sleep_time - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
 
             //This line dispatches a request after a timeout determined by sleep_time for a given row/request.
             console.log("delaying request " + result + "for " + sleep_time + "miliseconds.");
