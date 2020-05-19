@@ -230,7 +230,7 @@ if(args._.includes('playback')) {
     let connection = mysql.createConnection(connection_arguments)
 
     //Issue a static GET query for the prototype.
-    connection.query('SELECT * FROM raw WHERE job = ' + '\'' + cmd_options.jobId + '\'', function (error, results, fields) {
+    connection.query('SELECT * FROM raw;', function (error, results, fields) {
         if (error)
             throw error;
 
