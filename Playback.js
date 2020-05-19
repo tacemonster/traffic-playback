@@ -254,7 +254,7 @@ if(args._.includes('playback')) {
     		
     	}
     	
-        let sleep_time = (row.utime * 1000) - base_request_time);
+        let sleep_time = (row.utime * 1000) - base_request_time;
         
 		sleep_time = sleep_time / cmd_options.playbackSpeed;
 		
