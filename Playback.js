@@ -190,8 +190,8 @@ if(args._.includes('playback')) {
         return new Promise(() => {setTimeout(()=> {resolve(options)},ms_delay)});
     }
     
-    function delay_sql (ms_delay, func) {
-    	return new Promise(() => {setTimeout(()=> {func()}, ms_delay)});
+    function delay_sql (ms_delay, param, func) {
+    	return new Promise(() => {setTimeout(()=> {func(param)}, ms_delay)});
     	}
 
     //This function dispatches a request
@@ -241,6 +241,19 @@ if(args._.includes('playback')) {
 
 	let query = connection.query('SELECT * FROM raw;')
 	
+	
+	let scheduler = function(new_req_time){
+        	
+        		if(new_req_time < (Date.now() + 10000))
+        		{
+        			console.log("resuming scheduling");
+        			connection.resume();
+        		}
+        		else
+        			delay_sql(200, new_req_time, scheduler);
+        	}       	
+	
+	
 	query.on('error', function(err) {
 	})
 	.on('fields', function(fields) {
@@ -273,10 +286,7 @@ if(args._.includes('playback')) {
         	console.log("pausing scheduling");
         	connection.pause();
         	
-        	delay_sql(10000, function(){
-        		console.log("resuming scheduling");
-        		connection.resume();
-        	});        	
+        	delay_sql(200, newest_request_time, scheduler);
         }
 	})
 	.on('end', function(){
