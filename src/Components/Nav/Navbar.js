@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import TemplateStyles from "../ComponentTemplates/TemplateStyles";
 
 //This stateless  component returns the navbutton of the navbar.
@@ -29,14 +29,18 @@ function RetractedNavContents(props) {
 }
 //This component returns rendered contents for the navdrawer when it is extended.
 function ExtendedNavContents(props) {
-  var colorPicker = 0;
+  var keyIndex = 0;
 
   const linkArray = props.navLinks.map(link => {
+    keyIndex++;
+
     return (
-      <li className="nav-link link">
+      <li key={keyIndex} className="nav-link link">
         <Link to={link.route}>
           <span className="white">{"{"}</span>
-          <span className="yellow">{link.title}</span>
+          <span onClick={props.navDrawerButtonClick} className="yellow">
+            {link.title}
+          </span>
           <span className="white">{"};"}</span>
         </Link>
       </li>

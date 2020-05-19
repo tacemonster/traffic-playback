@@ -1,14 +1,34 @@
 import React from "react";
 import TemplateStyles from "../TemplateStyles.js";
+import { useHistory } from "react-router-dom";
 
 //This function will most likely get its own .js file since I anticipate
 // we may have additional HTTPServiceXXXXXX Components, but for now it is parked
 //here.
-function sendRequest(route, data, HTTPServiceClient) {
-  let request = new XMLHttpRequest();
-  request.open("POST", route);
-  request.send(JSON.stringify(data));
-  alert("Send request function in progress.This is a reminder :)");
+async function sendRequest(APIEndpoint, data, HTTPServiceClient) {
+  //DEBUG
+  //send an http request to the server.
+  return fetch(APIEndpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  }).then(
+    //get the response
+    resp => {
+      //process the http response in the HTTPServiceClient object,
+      //if the route does not have a handler assigned to the route.
+      //calling this function has no effect.
+      return HTTPServiceClient.processHTTPresponse(APIEndpoint, resp);
+    },
+    err => {
+      //I have not written code for handling errors yet.
+      //Most likely, ill add proccesHTTPerror function to the HTTPClientEndPoint class.
+      alert("placeholder error logging" + err);
+      return false;
+    }
+  );
 }
 
 //This button onClick method sends a request to the server. The server's response
@@ -18,9 +38,20 @@ function sendRequest(route, data, HTTPServiceClient) {
 function HTTPServiceButton(props) {
   return (
     <button
-      HTTPServiceClient={props.HTTPServiceClient}
       onClick={() => {
-        sendRequest(props.route, props.data);
+        sendRequest(props.APIEndPoint, props.data, props.HTTPService).then(
+          reRoute => {
+            if (reRoute) {
+              alert(
+                "Placeholder job dispatch success!Whoo! End Time > Start Time  Front-End/Back End server checks not implemented yet. Rerouting."
+              );
+              props.callMeMaybe();
+            } else
+              alert(
+                "Placeholder: Start Time must be > 0, End Time must be > 0. End Time > Start Time  Front-End/Back End server checks not implemented yet."
+              );
+          }
+        );
       }}
       className={TemplateStyles.HTTPServiceButton}
     >
