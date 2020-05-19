@@ -1,72 +1,44 @@
 # Database Drivers
 
-## MySQL
-install Node.js Dependency:
-``` bash
-npm install mysql
-```
+## Drivers Available
+* MySQL
+* MariaDB
+* Postgres
+* SQL Server
+* Oracle Database
 
-## SQL Server
-install Node.js Dependency:
-``` bash
-npm install mssql
-```
+## Drivers Example Usage
+```javascript
+const config = {
+    host: "localhost",
+    user: "your_db_user_name",
+    password: "your_db_password",
+    database: "your_database_name",
+};
+// choose the driver you need here: {mysql_driver, mariadb_driver, postgres_driver, sqlserver_driver, oracle_driver}
+const { mysql_driver, mariadb_driver } = require('path_to/DB_Driver');
 
-## Oracle Database
-install Node.js Dependency:
-``` bash
-npm install oracledb
+mysql_driver.connect(config);  // connect to the database
+// run query and get result or error back with Promise.
+mysql_driver.query('select * from table_name')
+    .then(res => {console.log(res); /* ... handle result */ })
+    .catch(err => console.log(err); /* ... handle error */);
+// run query then handle result or error within callback.
+mysql_driver.query_callback('select * from table_name', function (result, error) {
+    // ... handle result or error
+});
+mysql_driver.close();  // close database connection at the end.
 ```
+*** Note: Please refer to the demo file "demo_db_driver.js" for more details and other database drivers.
 
-## Postgres Database
+## Drivers Dependencies
+Please run `npm install` on our repo's root to download all dependencies automatically.
 
-Install Node.js Dependency
-``` bash
-npm install pg
-```
-
-Setup Postgres
-Install postgres: 
-``` bash
-$ sudo apt install postgresql postgresql-contrib
-```
-To login as root: 
-```
-$ sudo -u postgres psql
-```
-run the following:
-```
-postgres=# CREATE DATABASE traffic_log;
-postgres=# create role traffic;
-postgres=# alter role "traffic" with LOGIN;
-postgres=# alter role traffic with password '12345';
-postgres=# GRANT ALL PRIVILEGES ON DATABASE traffic_log to traffic;
-postgres=# \c traffic_log
-traffic_log=# GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO traffic;
-```
-
-To login as traffic: 
-```
-psql -U traffic -h localhost -d traffic_log
-password: 12345
-```
-
-## MariaDB
-install Node.js Dependency:
-``` bash
-npm install mariadb
-```
-
-to install MariaDB:
-``` bash
-$ sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
-$ sudo add-apt-repository 'deb [arch=amd64,arm64,ppc64el] http://ftp.utexas.edu/mariadb/repo/10.3/ubuntu bionic main'
-$ sudo apt update
-$ sudo apt install mariadb-server
-$ mysql_secure_installation
-```
-
-to login:
-```
-$ mysql -u root -p
+OR Manually install the one you need:
+```bash
+$ npm install mysql     # for MySQL
+$ npm install pg        # for postgres
+$ npm install mariadb   # for mariaDB
+$ npm install mssql     # for SQL Server
+$ npm install oracledb  # for oracle database
 ```

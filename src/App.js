@@ -9,6 +9,8 @@ class App extends React.Component {
         <PlayBack
           navLinks={[
             { title: "Home", route: "/" },
+            { title: 'Playback Jobs', route: '/playback' },
+            { title: 'Capture Jobs', route: '/capture' },
             {
               title: "Run A Completed Capture",
               route: "/runcapture"

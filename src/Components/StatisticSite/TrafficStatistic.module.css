@@ -2,13 +2,20 @@
     text-align: center;
 }
 
-.statTable {
-    max-height: 60vh;
-    overflow: auto;
-    overflow-x: hidden;
+.tableContainer {
     width: 100%;
     margin: 30px auto 20px;
     word-break: break-word;
+}
+.myTable > tbody {
+    display: block;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+.myTable thead, .myTable tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .chartContainer {

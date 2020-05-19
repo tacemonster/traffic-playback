@@ -1,12 +1,5 @@
 import React from 'react';
-import Table from 'react-bootstrap/Table';
-import Dropdown from 'react-bootstrap/Dropdown';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import Spinner from 'react-bootstrap/Spinner';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Alert from 'react-bootstrap/Alert';
+import { Dropdown, Table, Form, Button, Spinner, Row, Col, Alert } from 'react-bootstrap';
 import style from './TrafficStatistic.module.css';
 
 class RealTimeMonitor extends React.Component {
@@ -16,6 +9,7 @@ class RealTimeMonitor extends React.Component {
             content: null,
             loading: false,
             data: null,
+            error: false,
         };
         this.realtimeHandler = null;
         this.interval = 60000;  // default update traffic by every 60s
@@ -38,6 +32,7 @@ class RealTimeMonitor extends React.Component {
                 this.setState({
                     data: result,
                     loading: false,
+                    error: false,
                 });
             })
             .catch((err) => {
@@ -45,12 +40,15 @@ class RealTimeMonitor extends React.Component {
                 this.setState({
                     content: null,
                     loading: false,
+                    error: true,
                 });
             });
     }
 
     handleGet = (ms) => {
-        this.realtimeHandler = setInterval(this.getRealTimeData, ms);
+        if (ms) {
+            this.realtimeHandler = setInterval(this.getRealTimeData, ms);
+        }
     }
     handleRemove = () => {
         clearInterval(this.realtimeHandler);
@@ -71,7 +69,6 @@ class RealTimeMonitor extends React.Component {
         this.getRealTimeData();
         this.handleGet(this.interval);
     }
-
     componentWillUnmount() {
         this.handleRemove();
     }
@@ -83,6 +80,7 @@ class RealTimeMonitor extends React.Component {
                 <RealTimeTable
                     data={this.state.data}
                     loading={this.state.loading}
+                    error={this.state.error}
                     msHandler={this.handleUpdate}
                     refreshHandler={this.handleRefresh}
                 />
@@ -109,6 +107,7 @@ class RealTimeTable extends React.Component {
                 header: false,
             },
             remainTime: 60,
+            never: false,
         };
         this.updateTime = 60;
         this.remainTime = 60;
@@ -119,12 +118,15 @@ class RealTimeTable extends React.Component {
         if (nextProps.data) {
             this.handleContent(nextProps.data);
         }
+        if (nextProps.error === true) {
+            this.setState({ error: true });
+        }
     }
     componentDidMount() {
         this.handleRefreshTimeDisplay();
     }
     componentWillUnmount() {
-        clearInterval(this.refreshTimeHandler);
+        this.handleRemoveRefresh();
     }
 
     handleContent = (data) => {
@@ -133,7 +135,7 @@ class RealTimeTable extends React.Component {
             data.forEach((row) => {
                 content.push(this.handleRow(row));
             });
-            this.setState({ content: content });
+            this.setState({ content: content, error: false });
         }
     }
 
@@ -149,7 +151,7 @@ class RealTimeTable extends React.Component {
                 {col.host && <td style={{ maxWidth: '150px' }}>{row.host}</td>}
                 {col.uri && <td style={{ maxWidth: '150px' }}>{row.uri}</td>}
                 {col.protocol && <td>{row.protocol}</td>}
-                {col.secure && <td>{row.secure == 0 ? 'False' : 'True'}</td>}
+                {col.secure && <td>{row.secure === 0 ? 'False' : 'True'}</td>}
                 {col.method && <td style={{ maxWidth: '50px' }}>{row.method}</td>}
                 {col.sourceip && <td style={{ maxWidth: '110px' }}>{row.sourceip}</td>}
                 {col.header && <td style={{ maxWidth: '150px' }}>{row.header}</td>}
@@ -162,12 +164,12 @@ class RealTimeTable extends React.Component {
         let content = [];
         Object.keys(col).forEach(key => {
             content.push(
-                <div className={style.item} key={`column=${key}`}>
+                <div className={style.item} key={`column::${key}`}>
                     <Form.Check
                         onChange={this.handleCheckBox}
                         type={'checkbox'}
                         id={`column::${key}`}
-                        label={`${key}`}
+                        label={key}
                         checked={col[key]}
                         className={style.checkBox}
                     />
@@ -193,9 +195,20 @@ class RealTimeTable extends React.Component {
     }
 
     handleUpdateTime = (e) => {
-        let s = parseInt(e.target.options[e.target.selectedIndex].value);
-        this.updateTime = this.remainTime = s;
-        this.props.msHandler(s * 1000);
+        let value = e.target.options[e.target.selectedIndex].value;
+        if (value !== 'never') {
+            let s = parseInt(value);
+            this.updateTime = this.remainTime = s;
+            this.props.msHandler(s * 1000);
+            if (this.state.never === true) {
+                this.handleRefreshTimeDisplay();
+                this.setState({ never: false });
+            }
+        } else {
+            this.props.msHandler(null);
+            this.handleRemoveRefresh();
+            this.setState({ never: true });
+        }
     }
 
     handleRefreshTimeDisplay = () => {
@@ -206,6 +219,13 @@ class RealTimeTable extends React.Component {
             --this.remainTime;
             this.setState({ remainTime: this.remainTime });
         }, 1000);
+    }
+    handleRemoveRefresh = () => {
+        clearInterval(this.refreshTimeHandler);
+    }
+
+    handleAlert = () => {
+        this.setState({ error: false });
     }
 
     render() {
@@ -249,6 +269,7 @@ class RealTimeTable extends React.Component {
                             <option value='60'>60 seconds</option>
                             <option value='120'>120 seconds</option>
                             <option value='300'>300 seconds</option>
+                            <option value='never'>Never</option>
                         </Form.Control>
                     </Col>
                     <Col xs={12} sm={6} lg={3}>
@@ -262,34 +283,50 @@ class RealTimeTable extends React.Component {
                             disabled={this.props.loading ? true : false}
                             onClick={this.handleRefresh}
                         >
-                            {this.props.loading ? (
-                                <Spinner animation="border" size="sm" />
-                            ) : (
-                                'Refresh'
-                            )}
+                            {this.props.loading
+                                ? (<Spinner animation="border" size="sm" />)
+                                : ('Refresh')
+                            }
                         </Button>
-                        <div style={{textAlign: 'center'}}>Will Refresh in <span>{this.state.remainTime}</span>s</div>
+                        <div style={{ textAlign: 'center' }}>
+                            {!this.state.never
+                                ? <span>Will Refresh in <span>{this.state.remainTime}</span>s</span>
+                                : <span>Never Refresh Automatically</span>
+                            }
+                        </div>
                     </Col>
                 </Row>
 
-                <div className={style.statTable}>
-                    <Table striped bordered hover size="sm" responsive>
-                        <thead className="thead-dark">
-                            <tr>
-                                {col.id && <th>ID</th>}
-                                {col.jobID && <th>Job ID</th>}
-                                {col.date && <th>Time</th>}
-                                {col.host && <th>Host</th>}
-                                {col.uri && <th>Uri</th>}
-                                {col.protocol && <th>Protocol</th>}
-                                {col.secure && <th>Secure</th>}
-                                {col.method && <th>Method</th>}
-                                {col.sourceip && <th>Source IP</th>}
-                                {col.header && <th>Header Info</th>}
-                            </tr>
-                        </thead>
-                        <tbody>{this.state.content}</tbody>
-                    </Table>
+                <div className={style.tableContainer}>
+                    {!this.state.error ?
+                        <Table striped bordered hover size="sm" responsive className={style.myTable}>
+                            <thead className="thead-dark">
+                                <tr>
+                                    {col.id && <th>ID</th>}
+                                    {col.jobID && <th>Job ID</th>}
+                                    {col.date && <th>Time</th>}
+                                    {col.host && <th>Host</th>}
+                                    {col.uri && <th>Uri</th>}
+                                    {col.protocol && <th>Protocol</th>}
+                                    {col.secure && <th>Secure</th>}
+                                    {col.method && <th>Method</th>}
+                                    {col.sourceip && <th>Source IP</th>}
+                                    {col.header && <th>Header Info</th>}
+                                </tr>
+                            </thead>
+                            <tbody>{this.state.content}</tbody>
+                        </Table>
+                        :
+                        <Alert
+                            variant="danger"
+                            onClose={this.handleAlert}
+                            dismissible
+                            className={style.alertBox}
+                        >
+                            <Alert.Heading>Error</Alert.Heading>
+                            <p>Server Not Connected!</p>
+                        </Alert>
+                    }  
                 </div>
             </div>
         );
