@@ -251,7 +251,7 @@ if(args._.includes('playback')) {
     		
     	}
     	
-        let sleep_time = (row.utime * 1000) - base_request_time);
+        let sleep_time = (row.utime * 1000) - base_request_time;
         
 		sleep_time = sleep_time / cmd_options.playbackSpeed;
 		
@@ -271,7 +271,7 @@ if(args._.includes('playback')) {
         	
         	while(newest_request_time > (Date.now() + 10000))
         	{
-        		await sleep(10000/10);
+        		sleep(10000/10);
         	}
         	
         	connection.resume();
@@ -295,7 +295,7 @@ if(args._.includes('playback')) {
             let row_reference = results[result]; //This references a row which desribes a request
             //Calculate the time to sleep by obtaining the current request's delta from its capture point
             //Then subtracting a correction for a delta in local execution time.
-            let sleep_time = (results[result].utime * 1000) - base_request_time);
+            let sleep_time = (results[result].utime * 1000) - base_request_time;
 
 			sleep_time = sleep_time / cmd_options.playbackSpeed;
 			
