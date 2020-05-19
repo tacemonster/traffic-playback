@@ -96,6 +96,21 @@ const args = require('yargs')
             desc: 'specifies the speed at which requests are played back',
             type: 'number'
         });
+        yargs.options('port', {
+            alias: 'p',
+            desc: 'specifies which port to use for http connections',
+            type: 'string'
+        });
+        yargs.options('secure-port', {
+            alias: 's',
+            desc: 'specifies which port to use for SSL',
+            type: 'string'
+        });
+        yargs.options('request-buffer-time', {
+            alias: 'r',
+            desc: 'specifies how many milliseconds of requests to schedule',
+            type: 'string'
+        });
         yargs.options('hostname', {
             alias: 'host',
             desc: 'specifies where to send requests to',
@@ -130,8 +145,9 @@ if(args._.includes('playback')) {
         verbose: 0,
         playbackSpeed: 1,
         hostname: 'localhost',
-	port: 8080,
-	secure_port: 443
+        port: 8080,
+        securePort: 443,
+        requestBufferTime: 10000
     };
 
     if(args.configFile !== null) {
@@ -180,13 +196,22 @@ if(args._.includes('playback')) {
     if(!(typeof(cmd_options.playbackSpeed) === 'number' && Number.isFinite(cmd_options.playbackSpeed))) {
         throw error('Playback speed must be a number');
     }
+    if (!Number.isInteger(cmd_options.port)) {
+        throw error('Port must be an integer');
+    }
+    if (!Number.isInteger(cmd_options.securePort)) {
+        throw error('Secure port must be an integer');
+    }
+    if (!Number.isInteger(cmd_options.requestBufferTime)) {
+        throw error('Request buffer time must be an integer');
+    }
 
     //This function forgoes completing a task for ms_delay milliseconds. //For our purposes, it is used to space out requests.
     function delay_request (ms_delay,options,resolve,reject) {
         //The returned Promise will execute function resolve, which is dispatch_request defined right below, after ms_delay elapses.
         return new Promise(() => {setTimeout(()=> {resolve(options)},ms_delay)});
     }
-    
+
     function delay_sql (ms_delay, param, func) {
     	return new Promise(() => {setTimeout(()=> {func(param)}, ms_delay)});
     	}
@@ -233,22 +258,18 @@ if(args._.includes('playback')) {
 
     // Attempt to create a connection using the arguments above.
     let connection = mysql.createConnection(connection_arguments)
-
 	let query = connection.query('SELECT * FROM raw;')
-	
-	
-	let scheduler = function(new_req_time){
-        	
-        		if(new_req_time < (Date.now() + cmd_options.requestBufferTime))
-        		{
-        			console.log("resuming scheduling");
-        			connection.resume();
-        		}
-        		else
-        			delay_sql(cmd_options.requestBufferTime/100, new_req_time, scheduler);
-        	}       	
-	
-	
+
+	let scheduler = function(new_req_time) {
+        if(new_req_time < (Date.now() + cmd_options.requestBufferTime)) {
+            console.log("resuming scheduling");
+            connection.resume();
+        }
+        else {
+            delay_sql(cmd_options.requestBufferTime/100, new_req_time, scheduler);
+        }
+    }
+
 	query.on('error', function(err) {
 	})
 	.on('fields', function(fields) {
@@ -258,35 +279,27 @@ if(args._.includes('playback')) {
 		if(base_request_time == 0)
 		{
 	 		base_request_time = row.utime * 1000;
-    		
-    		
     	}
-    	
+
         let sleep_time = (row.utime * 1000) - base_request_time;
-        
 		sleep_time = sleep_time / cmd_options.playbackSpeed;
-		
 		sleep_time = sleep_time - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
 
         //This line dispatches a request after a timeout determined by sleep_time for a given row/request.
         console.log(Date.now() + " delaying request " + row + "for " + sleep_time + " milliseconds.");
-        
-        newest_request_time = Date.now() + sleep_time;
 
+        newest_request_time = Date.now() + sleep_time;
         delay_request(sleep_time,row,dispatch_request,null);
-        
-        
-        if(newest_request_time > (Date.now() + cmd_options.requestBufferTime))
-        {
+
+        if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
         	console.log("pausing scheduling");
         	connection.pause();
-        	
+
         	delay_sql(cmd_options.requestBufferTime/100, newest_request_time, scheduler);
         }
 	})
 	.on('end', function(){
 	});
-	
 
     //Close the connection.
     connection.end();
