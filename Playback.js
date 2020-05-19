@@ -215,8 +215,6 @@ if(args._.includes('playback')) {
         pre_request_hook(options, editable_options, req_options);
 
         if(editable_options.send_request === true) {
-	    console.log(req_options);
-	    console.log(editable_options);
             //Select the correct request class
             let webreq = editable_options['secure'] ? https : http;
 	    req_options.port = editable_options['secure'] ? cmd_options.secure_port : cmd_options.port;
