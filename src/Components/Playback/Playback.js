@@ -10,11 +10,8 @@ import RunJobs from "../ComponentTemplates/RunJobs";
 import Routes from "./Routes";
 import ConfigureJob from "../ConfigureJob/configureJob";
 import { func } from "prop-types";
-import TrafficStatistic from '../ComponentTemplates/StatisticSite/TrafficStatistic';
-import RealTimeMonitor from '../ComponentTemplates/StatisticSite/RealTime';
-
-
-
+import TrafficStatistic from "../ComponentTemplates/StatisticSite/TrafficStatistic";
+import RealTimeMonitor from "../ComponentTemplates/StatisticSite/RealTime";
 
 class PlayBack extends React.Component {
   constructor(props) {
@@ -65,9 +62,9 @@ class PlayBack extends React.Component {
                 CompletedCaptureJobsUrls={this.state.CompletedCaptureJobsUrls}
                 HTTPService={this.state.HTTPService}
               />
+            </Route>
             <Route exact path="/stats" component={TrafficStatistic}></Route>
-            <Route exact path='/realtime' component={RealTimeMonitor}></Route>
-            {this.buildDynamicRoutes()}
+            <Route exact path="/realtime" component={RealTimeMonitor}></Route>
           </Switch>
         </Body>
       </Router>
