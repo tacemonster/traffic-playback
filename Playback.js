@@ -75,7 +75,7 @@ const args = require('yargs')
             let connection = mysql.createConnection(connection_arguments);
             connection.query('SELECT * FROM job', function (error, results, fields) {
                 console.log(results);
-            }
+            });
         })
     .command('playback', 'plays back captured traffic', (yargs) => {
         yargs.options('job-id', {
@@ -153,7 +153,7 @@ if(args._.includes('playback')) {
             console.log('Error encountered parsing JSON string from JSON argument');
             return;
         }
-        let cmd_options = Object.assign(cmd_options, data);
+        cmd_options = Object.assign(cmd_options, data);
     }
 
     cmd_options = Object.assign(cmd_options, args);
