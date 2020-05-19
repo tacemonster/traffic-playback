@@ -127,7 +127,9 @@ if(args._.includes('playback')) {
     let default_options = {
         verbose: 0,
         playbackSpeed: 1,
-        hostname: 'localhost'
+        hostname: 'localhost',
+	port: 8080,
+	secure_port: 443
     };
 
     if(args.configFile !== null) {
@@ -208,8 +210,8 @@ if(args._.includes('playback')) {
 	    console.log(req_options);
 	    console.log(editable_options);
             //Select the correct request class
-            let webreq = editable_options['secure'] ? https : http
-		webreq = https;
+            let webreq = editable_options['secure'] ? https : http;
+	    req_options.port = editable_options['secure'] ? cmd_options.secure_port : cmd_options.port;
             let req = webreq.request(req_options, (res) => {
                 // Code for testing
                 // res.setEncoding("utf-8")
