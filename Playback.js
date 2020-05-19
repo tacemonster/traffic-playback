@@ -73,7 +73,7 @@ const args = require('yargs')
     .command('jobs', 'get the list of jobs available to be played back', (yargs) => {},
         function(argv) {
             let connection = mysql.createConnection(connection_arguments);
-            connection.query('SELECT * FROM job;', function (error, results, fields) {
+            connection.query('SELECT * FROM jobs;', function (error, results, fields) {
                 console.log(results);
             });
             connection.end();
