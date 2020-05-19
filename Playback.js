@@ -131,7 +131,6 @@ if(args._.includes('playback')) {
     let default_options = {
         verbose: 0,
         playbackSpeed: 1,
-        hostname: 'localhost'
     };
 
     if(args.configFile !== null) {
@@ -195,12 +194,9 @@ if(args._.includes('playback')) {
 
         let req_headers = new Object();
         let header_array = options.header.split("\r\n");
-
-        for (i = 0; i < header_array.length; i += 2)
+        for (i = 0; i < header_array.length - 1; i += 2)
         {
-
-            req_headers[header_array[i]] = header_array[i+1];    
-
+            req_headers[header_array[i]] = header_array[i+1];
         }
 
         let req_options = {"host":cmd_options.hostname, "setHost":false, "path":options.uri, "method":options.method, "headers":req_headers, "port":8080};
@@ -212,8 +208,11 @@ if(args._.includes('playback')) {
         pre_request_hook(options, editable_options, req_options);
 
         if(editable_options.send_request === true) {
+	    console.log(req_options);
+	    console.log(editable_options);
             //Select the correct request class
-            let webreq = editable_options['secure'] ? https : http
+            let webreq = editable_options['secure'] ? https : http;
+	    req_options.port = editable_options['secure'] ? cmd_options.secure_port : cmd_options.port;
             let req = webreq.request(req_options, (res) => {
                 // Code for testing
                 // res.setEncoding("utf-8")
@@ -278,7 +277,7 @@ if(args._.includes('playback')) {
 	});
 	
     //Issue a static GET query for the prototype.
-    connection.query('SELECT * FROM raw WHERE job = ' + '\'' + cmd_options.jobId + '\'', function (error, results, fields) {
+    connection.query('SELECT * FROM raw;', function (error, results, fields) {
         if (error)
             throw error;
 
