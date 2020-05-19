@@ -44,7 +44,6 @@ let plugins = require('./plugins')
 // Exposes a read-only version of the options (information from the database), allows plugin developers to edit
 // certain options (secure and request body), and req_options
 function pre_request_hook(options, editable_options, req_options) {
-    console.log('pre')
     for(let hook of hooks) {
         if(hook.event_type === hook_events.PRE_REQUEST) {
             hook.func(options, editable_options, req_options)
@@ -54,7 +53,6 @@ function pre_request_hook(options, editable_options, req_options) {
 
 // Exposes the response variable and (should) allow users to add callback functions to be executed after requests terminate
 function request_callback_hook(res) {
-    console.log('callback')
     for(let hook of hooks) {
         if(hook.event_type === hook_events.REQUEST_CALLBACK) {
             hook.func(res)
@@ -63,7 +61,6 @@ function request_callback_hook(res) {
 }
 
 function post_request_hook(req, options) {
-    console.log('post')
     for(let hook of hooks) {
         if(hook.event_type === hook_events.POST_REQUEST) {
             hook.func(req, options)
@@ -197,7 +194,7 @@ if(args._.includes('playback')) {
     //This function dispatches a request
     function dispatch_request(options){
         //request options url path and etc
-        console.log(Date.now())
+        console.log("Sending request. Time: " + Date.now())
 
         let req_headers = new Object();
         let header_array = options.header.split("\r\n");
@@ -242,13 +239,13 @@ if(args._.includes('playback')) {
 	
 	let scheduler = function(new_req_time){
         	
-        		if(new_req_time < (Date.now() + 10000))
+        		if(new_req_time < (Date.now() + cmd_options.requestBufferTime))
         		{
         			console.log("resuming scheduling");
         			connection.resume();
         		}
         		else
-        			delay_sql(200, new_req_time, scheduler);
+        			delay_sql(cmd_options.requestBufferTime/100, new_req_time, scheduler);
         	}       	
 	
 	
@@ -279,12 +276,12 @@ if(args._.includes('playback')) {
         delay_request(sleep_time,row,dispatch_request,null);
         
         
-        if(newest_request_time > (Date.now() + 10000))
+        if(newest_request_time > (Date.now() + cmd_options.requestBufferTime))
         {
         	console.log("pausing scheduling");
         	connection.pause();
         	
-        	delay_sql(200, newest_request_time, scheduler);
+        	delay_sql(cmd_options.requestBufferTime/100, newest_request_time, scheduler);
         }
 	})
 	.on('end', function(){
