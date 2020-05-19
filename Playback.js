@@ -99,17 +99,17 @@ const args = require('yargs')
         yargs.options('port', {
             alias: 'p',
             desc: 'specifies which port to use for http connections',
-            type: 'string'
+            type: 'number'
         });
         yargs.options('secure-port', {
             alias: 's',
             desc: 'specifies which port to use for SSL',
-            type: 'string'
+            type: 'number'
         });
         yargs.options('request-buffer-time', {
             alias: 'r',
-            desc: 'specifies how many milliseconds of requests to schedule',
-            type: 'string'
+            desc: 'specifies the size in milliseconds of the rolling request schedule window',
+            type: 'number'
         });
         yargs.options('hostname', {
             alias: 'host',
@@ -118,7 +118,7 @@ const args = require('yargs')
         });
         yargs.options('backend-server', {
             alias: 'b',
-            desc: 'NOT YET IMPLEMENTED - specifies which server will run the playback job',
+            desc: 'specifies which server will run the playback job',
             type: 'string'
         });
         yargs.options('config-file', {
