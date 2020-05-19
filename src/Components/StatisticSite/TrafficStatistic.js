@@ -1,12 +1,5 @@
 import React from 'react';
-import Table from 'react-bootstrap/Table';
-import Dropdown from 'react-bootstrap/Dropdown';
-import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
-import Spinner from 'react-bootstrap/Spinner';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Alert from 'react-bootstrap/Alert';
+import { Dropdown, Table, Form, Button, Spinner, Row, Col, Alert } from 'react-bootstrap';
 import style from './TrafficStatistic.module.css';
 import { Line } from 'react-chartjs-2';
 
@@ -14,7 +7,8 @@ class TrafficStatistic extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            data: null
+            data: null, 
+            error: false,
         };
     }
 
@@ -31,10 +25,11 @@ class TrafficStatistic extends React.Component {
             })
             .then((result) => {
                 console.log(result);
-                this.setState({ data: result });
+                this.setState({ data: result, error: false });
             })
             .catch((err) => {
                 console.log(err);
+                this.setState({ error: true });
             });
     }
     
@@ -43,7 +38,7 @@ class TrafficStatistic extends React.Component {
             <div>
                 <h1 className={style.title}>My Traffic Statistics</h1>
                 <hr></hr>
-                <StatsTable data={this.state.data} />
+                <StatsTable data={this.state.data} error={this.state.error} />
                 <StatsChart data={this.state.data} />
             </div>
         );
@@ -74,8 +69,7 @@ class StatsTable extends React.Component {
         return (
             <tr key={uri}>
                 <td>{uri}</td>
-                {/* <td></td> */}
-                <td>{total}</td>
+                <td style={{ textAlign: 'center' }}>{total}</td>
             </tr>
         );
     }
@@ -84,17 +78,28 @@ class StatsTable extends React.Component {
         return (
             <div>
                 <h2 className={style.title}>Traffic Summary</h2>
-                <div className={style.statTable}>
-                    <Table striped bordered hover size="sm" variant="dark">
-                        <thead>
-                            <tr>
-                                <th >URI</th>
-                                {/* <th>Domain</th> */}
-                                <th style={{minWidth: '90px'}}>Total Requests</th>
-                            </tr>
-                        </thead>
-                        <tbody>{this.state.content}</tbody>
-                    </Table>
+                <div className={style.tableContainer}>
+                    {!this.props.error
+                        ?
+                        <Table striped bordered hover size="sm" variant="dark" className={style.myTable}>
+                            <thead>
+                                <tr>
+                                    <th >URI</th>
+                                    <th style={{textAlign: 'center'}} >Total Requests</th>
+                                </tr>
+                            </thead>
+                            <tbody>{this.state.content}</tbody>
+                        </Table>
+                        :
+                        <Alert
+                            variant="danger"
+                            className={style.alertBox}
+                        >
+                            <Alert.Heading>Error</Alert.Heading>
+                            <p>Server Not Connected!</p>
+                        </Alert>
+                    }
+                    
                 </div>
             </div>
         );

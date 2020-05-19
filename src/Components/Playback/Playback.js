@@ -10,8 +10,8 @@ import RunJobs from "../ComponentTemplates/RunJobs";
 import Routes from "./Routes";
 import ConfigureJob from "../ConfigureJob/configureJob";
 import { func } from "prop-types";
-import TrafficStatistic from '../ComponentTemplates/StatisticSite/TrafficStatistic';
-import RealTimeMonitor from '../ComponentTemplates/StatisticSite/RealTime';
+import TrafficStatistic from '../StatisticSite/TrafficStatistic';
+import RealTimeMonitor from '../StatisticSite/RealTime';
 
 
 
