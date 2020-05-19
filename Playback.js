@@ -261,7 +261,7 @@ if(args._.includes('playback')) {
 		sleep_time = sleep_time - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
 
         //This line dispatches a request after a timeout determined by sleep_time for a given row/request.
-        console.log(Date.now() + " delaying request " + row + "for " + sleep_time + " miliseconds.");
+        console.log(Date.now() + " delaying request " + row + "for " + sleep_time + " milliseconds.");
         
         newest_request_time = Date.now() + sleep_time;
 
@@ -270,9 +270,13 @@ if(args._.includes('playback')) {
         
         if(newest_request_time > (Date.now() + 10000))
         {
+        	console.log("pausing scheduling");
         	connection.pause();
         	
-        	delay_sql(10000, function(){connection.resume();});        	
+        	delay_sql(10000, function(){
+        		console.log("resuming scheduling");
+        		connection.resume();
+        	});        	
         }
 	})
 	.on('end', function(){
