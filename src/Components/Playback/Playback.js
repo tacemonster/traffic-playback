@@ -14,8 +14,8 @@ import NavListing from "../ComponentTemplates/Listings";
 import Navbar from "../Nav/Navbar";
 import HTTPClientEndPoint from "../ComponentTemplates/HTTPServices/HTTPClientEndPoint";
 import { func } from "prop-types";
-import TrafficStatistic from '../ComponentTemplates/StatisticSite/TrafficStatistic';
-import RealTimeMonitor from '../ComponentTemplates/StatisticSite/RealTime';
+import TrafficStatistic from '../StatisticSite/TrafficStatistic';
+import RealTimeMonitor from '../StatisticSite/RealTime';
 
 //This class reports URLS and URL->[job list mappings] for the playback app.
 class UrlJobInfo {
