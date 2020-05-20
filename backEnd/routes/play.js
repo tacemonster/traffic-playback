@@ -9,9 +9,7 @@ var childProcess = require("child_process");
 function runScript(scriptPath, jsonArg, errLogCallback) {
   var invoked = false;
 
-  var process = childProcess.fork(scriptPath, {
-    execArgv: ["--" + jsonArg]
-  });
+  var process = childProcess.fork(scriptPath, ['playback', '--json', jsonArg]);
 
   // listen for errors as they may prevent the exit event from firing
   process.on("error", function(err) {
