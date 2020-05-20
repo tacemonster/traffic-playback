@@ -10,6 +10,13 @@ const hosts = [
   { jobName: 'thirdJob', host: "ghi.com" },
 ];
 
+
+const playbackRecord = {
+	jobName: '' ,
+	startTime:'' ,
+	endTime: ''
+};
+
 router.get("/", (req, res) => {
   mySqlConnect.query("SELECT * from raw", (error, results, fields) => {
     if (error) throw error;
@@ -47,12 +54,14 @@ router.post("/run", (req, res) => {
   const { error } = validatePostJobs(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  //mySqlConnect.query("INSERT INTO trafficDB.jobs (jobName, jobStart, jobStop)  VALUES (?, ?, ?) ", [req.body.jobName, req.body.startTime, req.body.endTime], (error, results, fields) => {
-  //  if (error) throw error;
-   // else res.send(`${req.body.jobName} is currently in progress`);
-  //});
-//res= await axios.get('/api/get/beerWithComments?name=' + parameter);
+  playbackRecord.jobName = req.body.jobName;
+  playbackRecord.startTime = req.body.startTime;
+  playbackRecord.endTime = req.body.endTime;
 
+  console.log(playbackRecord);
+  res.send('success');
+//connecting to the playback script. 
+/*
 Axios.get('/home/ubuntu/traffic-playback/PlaybackPrototype.js', {
     params: {
       ID: 12345
@@ -65,13 +74,15 @@ Axios.get('/home/ubuntu/traffic-playback/PlaybackPrototype.js', {
   .catch(function (error) {
     console.log(error);
   });
+ */
+
 });
 
 function validatePostJobs(jobInfo) {
   const schema = {
-    jobName: Joi.string().min(4).regex(/(''|[^'])*/).regex(/^[a-zA-Z0-9.-]+$/).required(),
-    startTime: Joi.number().integer().min(0000).max(2359),
-    endTime: Joi.number().integer().min(0001).max(2400)
+    jobName: Joi.string().min(4),
+    startTime: Joi.string().min(4),
+    endTime: Joi.string().min(4)
   };
 
   return Joi.validate(jobInfo, schema);

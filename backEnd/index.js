@@ -12,7 +12,7 @@ const cors = require("cors");
 
 app.use(express.json());
 app.use(cors());
-
+app.use(express.static('playBackScript'));
 app.use(express.urlencoded({ extended: true }));
 app.use("/", home);
 app.use("/api/play", play);

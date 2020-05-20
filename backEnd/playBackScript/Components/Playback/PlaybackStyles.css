@@ -1,0 +1,73 @@
+.nav-bar-custom {
+  border-bottom: 1px solid black;
+  background: linear-gradient(
+    90deg,
+    rgba(36, 0, 21, 1) 0%,
+    rgba(79, 0, 111, 1) 0%,
+    rgba(0, 84, 255, 1) 100%
+  );
+
+  box-shadow: 2px 2px black;
+  transition: 1s height;
+}
+
+.nav-bar-extended {
+  width: 250px;
+}
+
+.nav-button {
+  height: 50px;
+  width: 50px;
+  border-radius: 2px;
+  background: url("./nav_icon.png");
+}
+
+link:hover {
+  color: #ffd000;
+}
+
+.white {
+  color: white;
+  font-size: 1.1em;
+}
+
+.light-red {
+  color: lightcoral;
+}
+
+.light-gray {
+  color: lightslategray;
+}
+
+.yellow {
+  color: #ffab00;
+}
+
+.dark-blue {
+  color: #02002b;
+}
+.generic-heading {
+  font-size: 2em;
+}
+
+.row-heading {
+  margin-top: 5px;
+  height: 80px;
+  background-color: #d4d3d2;
+}
+
+.listing-style {
+  height: 50px;
+
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding: 2px 4px 2px 4px;
+}
+
+.listing-style:hover {
+  background-color: #e6ecf5;
+}
+
+.listing-wrapper {
+  border: 1px solid black;
+}
