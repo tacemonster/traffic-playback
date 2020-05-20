@@ -10,11 +10,9 @@ import RunJobs from "../ComponentTemplates/RunJobs";
 import Routes from "./Routes";
 import ConfigureJob from "../ConfigureJob/configureJob";
 import { func } from "prop-types";
-import TrafficStatistic from '../StatisticSite/TrafficStatistic';
-import RealTimeMonitor from '../StatisticSite/RealTime';
-
-
-
+import TrafficStatistic from "../StatisticSite/TrafficStatistic";
+import RealTimeMonitor from "../StatisticSite/RealTime";
+import CreateJob from "../ComponentTemplates/CreateJob";
 
 class PlayBack extends React.Component {
   constructor(props) {
@@ -26,11 +24,15 @@ class PlayBack extends React.Component {
       Routes.run,
       HTTPClientFunctions.runplayback
     );
+    HTTPService.registerUrlStateHandler(
+      Routes.createjob,
+      HTTPClientFunctions.createjob
+    );
 
     this.state = {
       //Completed and InProgress URLS and job lists will be supplied by the database
       //For now they are hardcoded in.
-      CompletedCaptureJobsUrls: null,
+      jobs: [],
       HTTPService: HTTPService
     };
   }
@@ -38,8 +40,7 @@ class PlayBack extends React.Component {
   componentDidMount() {
     this.state.HTTPService.init().then(resp => {
       this.setState({
-        reRender: resp.reRender,
-        CompletedCaptureJobsUrls: resp.CompletedCaptureJobsUrls
+        jobs: resp.jobs
       });
     });
   }
@@ -60,14 +61,37 @@ class PlayBack extends React.Component {
         <Navbar navLinks={this.props.navLinks} />
         <Body>
           <Switch>
+            <Route exact path="/">
+              <div>
+                <h1>Notes</h1>
+                <div>
+                  {" "}
+                  We are in the progress of designing live updates to the front
+                  end. For example,if you create a new job and head over to the
+                  run jobs tab without exiting, then the app wiil not display
+                  the new job created. Just reload the app if this is the case.
+                  We'll add this realtime update to the app soon.Also, some
+                  forms do not validate input nor does the server validate their
+                  unvalidated input, so SQL injection and phony values are all
+                  possible. We're working on this. There's also misc
+                  inconsitencies like scroll bar not resetting. We'll fix this.
+                </div>
+              </div>
+            </Route>
             <Route exact path="/runcapture">
               <RunJobs
-                CompletedCaptureJobsUrls={this.state.CompletedCaptureJobsUrls}
+                jobs={this.state.jobs}
                 HTTPService={this.state.HTTPService}
               />
+            </Route>
+            <Route exact path="/createjob">
+              <CreateJob
+                APIEndPoint={Routes.createjob}
+                HTTPService={this.state.HTTPService}
+              ></CreateJob>
+            </Route>
             <Route exact path="/stats" component={TrafficStatistic}></Route>
-            <Route exact path='/realtime' component={RealTimeMonitor}></Route>
-            {this.buildDynamicRoutes()}
+            <Route exact path="/realtime" component={RealTimeMonitor}></Route>
           </Switch>
         </Body>
       </Router>

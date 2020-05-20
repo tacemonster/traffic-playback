@@ -36,19 +36,17 @@ async function sendRequest(APIEndpoint, data, HTTPServiceClient) {
 //is then passed off to the HTTPServiceCLient which will update the apps state
 //accordingly.
 function HTTPServiceButton(props) {
+  let history = useHistory();
   return (
     <button
       onClick={() => {
         sendRequest(props.APIEndPoint, props.data, props.HTTPService).then(
           reRoute => {
             if (reRoute) {
-              alert(
-                "Placeholder job dispatch success!Whoo! End Time > Start Time  Front-End/Back End server checks not implemented yet. Rerouting."
-              );
-              props.callMeMaybe();
+              history.push(props.route || "/");
             } else
               alert(
-                "Placeholder: Start Time must be > 0, End Time must be > 0. End Time > Start Time  Front-End/Back End server checks not implemented yet."
+                "Something went wrong. We're working on better way of notifying the user of failure."
               );
           }
         );

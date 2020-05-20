@@ -5,13 +5,12 @@ const mysqlConnection = mysql.createConnection({
   user: "traffic",
   password: "12345",
   database: "trafficDB",
-  multipleSatements: true,
+  multipleSatements: true
 });
 
-mysqlConnection.connect((err) => {
+mysqlConnection.connect(err => {
   if (!err) console.log("connected");
-  else console.log("Connection Failed");
+  else console.log(err);
 });
 
 module.exports = mysqlConnection;
-
