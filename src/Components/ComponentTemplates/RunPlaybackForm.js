@@ -6,58 +6,81 @@ class RunPlaybackForm extends React.Component {
   constructor(props) {
     super(props);
     let now = new Date();
-    let dateString = this.dateToString(now);
 
     this.state = {
-      url: props.url,
-      jobName: props.jobName,
-      startTime: 0,
-      endTime: 1,
-      date: dateString
+      jobId: props.jobId,
+      verbose: 0,
+      playbackSpeed: 1,
+      port: 8080,
+      securePort: 443,
+      requestBufferTime: 10000,
+      hostname: "localhost",
+      backendServer: 1
     };
     this.onChange = this.onChange.bind(this);
     window.scrollTo(0, 0);
-  }
-
-  dateToString(date) {
-    var d = new Date(date),
-      month = "" + (d.getMonth() + 1),
-      day = "" + d.getDate(),
-      year = d.getFullYear();
-
-    if (month.length < 2) month = "0" + month;
-    if (day.length < 2) day = "0" + day;
-
-    return [year, month, day].join("-");
   }
 
   onChange(e) {
     e.preventDefault();
     let inputName = e.target.name;
     let stateValue = e.target.value;
-    let regexTest = /[^012345679-]/g;
-    let invalidChars = regexTest.test(stateValue);
-
     //if no invalid chars are detected
-    if (!invalidChars) {
-      let number = Number(stateValue); //convert the stateValue to a number now.
+    let invalidCharTest = /[^1234567890]/g.test(stateValue);
+
+    if (inputName === "hostname") {
+      this.setState({ hostname: stateValue });
+    } else if (!invalidCharTest) {
       switch (inputName) {
-        case "startTime":
-          if (number >= 0 && number < 2459)
-            this.setState({ startTime: number });
+        case "verbose":
+          this.setState({ verbose: stateValue });
           break;
-        case "endTime":
-          if (number >= 0 && number <= 2459) this.setState({ endTime: number });
+        case "playbackSpeed":
+          this.setState({ playbackSpeed: stateValue });
           break;
-        case "date":
-          this.setState({ date: stateValue });
+        case "port":
+          this.setState({ port: stateValue });
           break;
-        default:
+        case "securePort":
+          this.setState({ securePort: stateValue });
+          break;
+        case "requestBufferTime":
+          this.setState({ requestBufferTime: stateValue });
+          break;
+        case "hostname":
+          this.setState({ hostname: stateValue });
+          break;
+        case "backendServer":
+          this.setState({ backendServer: stateValue });
           break;
       }
     }
   }
 
+  buildForm = () => {
+    // This function builds a dynamic form.
+    let keys = Object.keys(this.state);
+
+    let form = keys.map(key => {
+      //Never give the user the ability to set jobId
+      //return null in that case
+      if (key === "jobId") return null;
+
+      return (
+        <React.Fragment>
+          <h2>{key}</h2>
+          <input
+            name={key}
+            type="text"
+            value={this.state[key]}
+            onChange={e => this.onChange(e)}
+            placeholder="enter a value"
+          />
+        </React.Fragment>
+      );
+    });
+    return form;
+  };
   render() {
     let retVal = null;
     let keyIndex = 0;
@@ -69,14 +92,9 @@ class RunPlaybackForm extends React.Component {
           callMeMaybe={this.props.callMeMaybe}
           HTTPService={button.HTTPService}
           APIEndPoint={button.APIEndPoint}
-          data={{
-            jobName: this.state.jobName,
-            startTime: this.state.startTime,
-            endTime: this.state.endTime
-            //date: this.state.date uncomment when server supports date checking
-          }}
+          data={this.state}
           key={keyIndex}
-          route={"/runcapture"}
+          route={"/"}
         >
           Run Job
         </HTTPServiceButton>
@@ -85,33 +103,7 @@ class RunPlaybackForm extends React.Component {
 
     retVal = (
       <div>
-        <h3 className={TemplateStyles.listingHeader}>
-          {" "}
-          Config Job {this.props.jobName} for {this.props.url}
-        </h3>
-        <h2>Start Time</h2>
-        <input
-          name="startTime"
-          type="text"
-          value={this.state.startTime}
-          onChange={e => this.onChange(e)}
-          placeholder="enter 24hr format time (hhmm):0000,1232,2359, and etc"
-        />
-        <h2>End Time</h2>
-        <input
-          name="endTime"
-          type="text"
-          value={this.state.endTime}
-          onChange={e => this.onChange(e)}
-          placeholder="enter 24hr format time (hhmm):0000,1232,2359, and etc"
-        />
-        <h2>Date to run</h2>
-        <input
-          name="date"
-          type="date"
-          value={this.state.date}
-          onChange={e => this.onChange(e)}
-        />
+        {this.buildForm()}
         {httpButtons}
         <input
           type="button"
