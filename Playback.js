@@ -72,7 +72,7 @@ function post_request_hook(req, options) {
 const args = require('yargs')
     .scriptName("Playback")
     .usage('$0 <cmd> [args]')
-    .command('jobs', 'get the list of jobs available to be played back', (yargs) => {},
+    .command('capture-jobs', 'get the list of jobs available to be played back', (yargs) => {},
         function(argv) {
             let connection = mysql.createConnection(connection_arguments);
             connection.query('SELECT * FROM jobs;', function (error, results, fields) {
@@ -262,7 +262,7 @@ if(args._.includes('playback')) {
 
 	let scheduler = function(new_req_time) {
         if(new_req_time < (Date.now() + cmd_options.requestBufferTime)) {
-            console.log("resuming scheduling");
+            // console.log("resuming scheduling");
             connection.resume();
         }
         else {
@@ -292,7 +292,7 @@ if(args._.includes('playback')) {
         delay_request(sleep_time,row,dispatch_request,null);
 
         if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
-        	console.log("pausing scheduling");
+        	// console.log("pausing scheduling");
         	connection.pause();
 
         	delay_sql(cmd_options.requestBufferTime/100, newest_request_time, scheduler);
