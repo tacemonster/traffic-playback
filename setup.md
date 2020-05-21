@@ -2,20 +2,11 @@
 
 ## With existing NGINX proxy:
 
-Setup a LAMP (apache) or LEMP (nginx) server to host traffic capture.
-
-**LAMP:**
-https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04
-
-**LEMP:**
-https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04
+Setup a [LAMP](https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04) (apache) or [LEMP](https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04) (nginx) server to host traffic capture.
 
 ## Without existing NGINX proxy:
 
-Setup a LEMP server to function as a reverse proxy and host traffic capture.
-
-**LEMP:**
-https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04
+Setup a [LEMP](https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04) server to function as a reverse proxy and host traffic capture.
 
 ## Configure NGINX Reverse Proxy
 
@@ -92,7 +83,24 @@ server{
 
 If you are editing an existing reverse proxy configuration, the important part here is to use the nginx-mirror module `mirror /tpt-mirror` in your reverse proxy location handler, and create a  `location /tpt-mirror` configuration block to dispatch the request for capture logging.
 
-## TODO: Should probably install & configure the database & database user here.
+## Set up the database
+
+Edit the file setup_mysql.sql to set a username and password for the project, then run
+```
+mysql trafficDB < sql/setup_mysql.sql
+```
+to set up the database
+
+Then run
+```
+mysql trafficDB < sql/catchAll.sql
+```
+to start the traffic capture.
+
+If you want to stop capturing data, run
+```
+mysql trafficDB < sql/killCatchAll.sql
+```
 
 ## Install & configure capture script
 
@@ -130,8 +138,17 @@ Insert your mysql database connection info into the `traffic_capture.php` script
 <?php
 //Database configuration
 $servername = "localhost";
-$username = "some_user";
-$password = "random_password";
+$username = "your_username";
+$password = "your_password";
 $database = "database_name";
 //End script configuration block
+```
+
+## Setup playback
+
+Install [Node.js](https://nodejs.org/en/download/package-manager/)
+
+In the root of the repository, run 
+```
+npm install
 ```
