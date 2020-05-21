@@ -262,7 +262,7 @@ if(args._.includes('playback')) {
 
 	let scheduler = function(new_req_time) {
         if(new_req_time < (Date.now() + cmd_options.requestBufferTime)) {
-            console.log("resuming scheduling");
+            // console.log("resuming scheduling");
             connection.resume();
         }
         else {
@@ -292,7 +292,7 @@ if(args._.includes('playback')) {
         delay_request(sleep_time,row,dispatch_request,null);
 
         if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
-        	console.log("pausing scheduling");
+        	// console.log("pausing scheduling");
         	connection.pause();
 
         	delay_sql(cmd_options.requestBufferTime/100, newest_request_time, scheduler);
