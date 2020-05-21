@@ -4,7 +4,7 @@ This tool will allow you to capture a record of traffic going to a website that 
 
 ## Getting Set Up
 
-First, you will want to [set up a reverse proxy](https://github.com/tacemonster/traffic-playback/tree/master/Capture/capture_set.md) to capture your network traffic without slowing down access to the site. You will then need to set up the database.
+First, you will want to [set up a reverse proxy](https://github.com/tacemonster/traffic-playback/tree/FeatureFreeze/setup.md) to capture your network traffic without slowing down access to the site. You will then need to set up the database.
 
 ## Product Features
 
@@ -15,10 +15,12 @@ node Playback.js --help
 
 To view Capture jobs that have been created, type
 ```
-node Playback.js jobs
+node Playback.js capture-jobs
 ```
 
-To see the available options and how to start a playback job, type
+To see the available options and how to start a playback session, type
 ```
 node Playback.js playback --help
 ```
+
+[option.json](https://github.com/tacemonster/traffic-playback/blob/FeatureFreeze/options.json) contains an example of the correct json schema to use with the -c/--config-file and -j/--json flags.
