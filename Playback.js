@@ -72,7 +72,7 @@ function post_request_hook(req, options) {
 const args = require('yargs')
     .scriptName("Playback")
     .usage('$0 <cmd> [args]')
-    .command('jobs', 'get the list of jobs available to be played back', (yargs) => {},
+    .command('capture-jobs', 'get the list of jobs available to be played back', (yargs) => {},
         function(argv) {
             let connection = mysql.createConnection(connection_arguments);
             connection.query('SELECT * FROM jobs;', function (error, results, fields) {
