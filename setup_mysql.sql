@@ -1,5 +1,7 @@
 DROP DATABASE IF EXISTS trafficDB;
 CREATE DATABASE trafficDB;
+CREATE USER 'tdbUser'@'localhost' IDENTIFIED BY 'SecurePassword2.0';
+GRANT ALL PRIVILEGES ON trafficDB.* TO 'tdbUser'@'localhost';
 
 USE trafficDB;
 
@@ -98,5 +100,6 @@ CREATE TABLE headerrel (
 	FOREIGN KEY (recordID) REFERENCES records(recordID),
 	FOREIGN KEY (headerID) REFERENCES headers(headerID)
 );
+
 
 
