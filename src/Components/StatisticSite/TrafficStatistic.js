@@ -2,6 +2,7 @@ import React from 'react';
 import { Dropdown, Table, Form, Button, Spinner, Row, Col, Alert } from 'react-bootstrap';
 import style from './TrafficStatistic.module.css';
 import { Line } from 'react-chartjs-2';
+import Routes from '../Playback/Routes';
 
 class TrafficStatistic extends React.Component {
     constructor(props) {
@@ -13,7 +14,9 @@ class TrafficStatistic extends React.Component {
     }
 
     componentDidMount = () => {
-        fetch('http://ec2-54-152-230-158.compute-1.amazonaws.com:8000/api/play')
+        let url = Routes.getAllRaw;
+        // let url = 'http://ec2-54-152-230-158.compute-1.amazonaws.com:8000/api/play';
+        fetch(url)
             .then((res) => {
                 if (res.json) {
                     return res.json().then((json) => {
@@ -109,8 +112,8 @@ class StatsTable extends React.Component {
 
 const lineColors = [
     'rgb(237, 41, 58)',
-    'rgba(75,192,192,1)',
-    'rgba(230,54,192,1)',
+    'rgb(75,192,192)',
+    'rgb(230,54,192)',
     'rgb(100, 53, 201)',
     'rgb(33, 133, 208)',
 ];
