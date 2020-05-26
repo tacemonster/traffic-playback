@@ -240,6 +240,7 @@ if(args._.includes('playback')) {
             //Select the correct request class
             let webreq = editable_options['secure'] ? https : http;
             req_options.port = editable_options['secure'] ? cmd_options.secure_port : cmd_options.port;
+            req_options.headers.Host = cmd_options.hostname;
             let req;
             try {
                 req = webreq.request(req_options, (res) => {
