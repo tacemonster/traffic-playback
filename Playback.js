@@ -144,7 +144,7 @@ if(args._.includes('playback')) {
     let default_options = {
         verbose: 0,
         playbackSpeed: 1,
-        hostname: 'localhost',
+        hostname: 'cascadevinyls.com',
         port: 8080,
         securePort: 4443,
         requestBufferTime: 10000
