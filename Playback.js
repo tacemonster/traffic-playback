@@ -361,7 +361,7 @@ if(args._.includes('playback')) {
     // Attempt to create a connection using the arguments above.
     let connection = mysql.createConnection(connection_arguments);
     let count_query = connection.query('SELECT COUNT(*) FROM raw', function(err, result, fields){
-        console.log(result{0})
+        console.log(result[0])
     });
 
 
