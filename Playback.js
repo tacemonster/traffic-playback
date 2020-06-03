@@ -72,14 +72,55 @@ function post_request_hook(req, options) {
 const args = require('yargs')
     .scriptName("Playback")
     .usage('$0 <cmd> [args]')
-    .command('capture-jobs', 'get the list of jobs available to be played back', (yargs) => {},
+    .command('capture-job-list', 'get the list of jobs available to be played back', (yargs) => {},
         function(argv) {
             let connection = mysql.createConnection(connection_arguments);
             connection.query('SELECT * FROM jobs;', function (error, results, fields) {
                 console.log(results);
             });
             connection.end();
-        })
+    })
+    .command('capture-job-start', 'start a capture job', (yargs) => {
+        yargs.options('verbose', {
+            alias: 'v',
+            desc: 'specifies verbosity level',
+            type: 'count'
+        });
+        yargs.options('job-name', {
+            alias: 'j',
+            desc: 'specifies the name of the job',
+            type: 'string'
+        });
+        yargs.options('hostname', {
+            alias: 'host',
+            desc: 'specifies which domain to capture requests from',
+            type: 'string'
+        });
+        yargs.options('regex', {
+            alias: 'r',
+            desc: 'specifies a regex string that will be used to filter what requests to capture',
+            type: 'string'
+        });
+        yargs.options('port', {
+            alias: 'p',
+            desc: 'specifies which port to use for http connections',
+            type: 'number'
+        });
+        yargs.options('secure-port', {
+            alias: 's',
+            desc: 'specifies which port to use for SSL',
+            type: 'number'
+        });
+        return yargs;
+    })
+    .command('capture-job-end', 'stops a capture job by job', (yargs) => {
+        yargs.options('job-id', {
+            alias: 'i',
+            desc: 'specifies which capture job to stop',
+            type: 'number'
+        });
+        return yargs;
+    })
     .command('playback', 'plays back captured traffic', (yargs) => {
         yargs.options('job-id', {
             alias: 'i',
@@ -138,6 +179,66 @@ const args = require('yargs')
     .help()
     .argv
 
+let fill_in_default_values = function(default_options, cmd_options) {
+    // Fill in default values, if they're not already specified
+    for (let [key, value] of Object.entries(default_options)) {
+        if(cmd_options[key] === undefined) {
+            cmd_options[key] = value;
+        }
+    }
+}
+
+// Code for starting a capture job
+if(args._.includes('capture-job-start')) {
+    let cmd_options = Object.assign(cmd_options, args);
+    let default_options = {
+        verbose: 0,
+        regex: '',
+        hostname: 'localhost',
+        port: 8080,
+        securePort: 8443,
+    };
+
+    fill_in_default_values(default_options, cmd_options)
+
+    // Validation
+    if(cmd_options.jobId === undefined) {
+        throw error('Job ID must be specified');
+    }
+    if (!Number.isInteger(cmd_options.jobId)) {
+        throw error('Job ID must be an integer');
+    }
+    if(!(typeof(cmd_options.playbackSpeed) === 'number' && Number.isFinite(cmd_options.playbackSpeed))) {
+        throw error('Playback speed must be a number');
+    }
+    if (!Number.isInteger(cmd_options.port)) {
+        throw error('Port must be an integer');
+    }
+    if (!Number.isInteger(cmd_options.securePort)) {
+        throw error('Secure port must be an integer');
+    }
+    if (!Number.isInteger(cmd_options.requestBufferTime)) {
+        throw error('Request buffer time must be an integer');
+    }
+
+    // SQL to create the job
+    let connection = mysql.createConnection(connection_arguments);
+    connection.query('SELECT * FROM jobs;', function (error, results, fields) {
+        console.log(results);
+    });
+    connection.end();
+
+}
+
+if(args._.includes('capture-job-end')) {
+    let connection = mysql.createConnection(connection_arguments);
+    connection.query('SELECT * FROM jobs;', function (error, results, fields) {
+        console.log(results);
+    });
+    connection.end();
+}
+
+// Code for playback option
 if(args._.includes('playback')) {
     // Build object out of arguments
     let cmd_options = {};
@@ -179,12 +280,7 @@ if(args._.includes('playback')) {
 
     cmd_options = Object.assign(cmd_options, args);
 
-    // Fill in default values, if they're not already specified
-    for (let [key, value] of Object.entries(default_options)) {
-        if(cmd_options[key] === undefined) {
-            cmd_options[key] = value;
-        }
-    }
+    fill_in_default_values(default_options, cmd_options)
 
     // Validation
     if(cmd_options.jobId === undefined) {
@@ -219,7 +315,7 @@ if(args._.includes('playback')) {
     //This function dispatches a request
     function dispatch_request(options){
         //request options url path and etc
-        console.log("Sending request. Time: " + Date.now())
+        // console.log("Sending request. Time: " + Date.now())
 
         let req_headers = new Object();
         let header_array = options.header.split("\r\n");
@@ -263,8 +359,13 @@ if(args._.includes('playback')) {
     }
 
     // Attempt to create a connection using the arguments above.
-    let connection = mysql.createConnection(connection_arguments)
-	let query = connection.query('SELECT * FROM raw;')
+    let connection = mysql.createConnection(connection_arguments);
+    let count_query = connection.query('SELECT COUNT(*) FROM raw', function(err, result, fields){
+        console.log(result{0})
+    });
+
+
+	let query = connection.query('SELECT * FROM raw;');
 
 	let scheduler = function(new_req_time) {
         if(new_req_time < (Date.now() + cmd_options.requestBufferTime)) {
@@ -292,7 +393,7 @@ if(args._.includes('playback')) {
 		sleep_time = sleep_time - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
 
         //This line dispatches a request after a timeout determined by sleep_time for a given row/request.
-        console.log(Date.now() + " delaying request " + row + "for " + sleep_time + " milliseconds.");
+        // console.log(Date.now() + " delaying request " + row + "for " + sleep_time + " milliseconds.");
 
         newest_request_time = Date.now() + sleep_time;
         delay_request(sleep_time,row,dispatch_request,null);
