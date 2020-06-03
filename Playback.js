@@ -92,7 +92,7 @@ const args = require('yargs')
             type: 'count'
         });
         yargs.options('playback-speed', {
-            alias: 'p',
+            alias: 'ps',
             desc: 'specifies the speed at which requests are played back',
             type: 'number'
         });
@@ -146,7 +146,7 @@ if(args._.includes('playback')) {
         playbackSpeed: 1,
         hostname: 'localhost',
         port: 8080,
-        securePort: 443,
+        securePort: 8443,
         requestBufferTime: 10000
     };
 
@@ -239,20 +239,26 @@ if(args._.includes('playback')) {
         if(editable_options.send_request === true) {
             //Select the correct request class
             let webreq = editable_options['secure'] ? https : http;
-	        req_options.port = editable_options['secure'] ? cmd_options.secure_port : cmd_options.port;
-            let req = webreq.request(req_options, (res) => {
-                // Code for testing
-                // res.setEncoding("utf-8")
-                // res.on('data', (data)=>{/*console.log(data)*/})
-                // res.on('end', ()=>{console.log("Finished streaming data for request response.")})
+            req_options.port = editable_options['secure'] ? cmd_options.secure_port : cmd_options.port;
+            req_options.headers.Host = cmd_options.hostname;
+            let req;
+            try {
+                req = webreq.request(req_options, (res) => {
+                    // Code for testing
+                    // res.setEncoding("utf-8")
+                    // res.on('data', (data)=>{/*console.log(data)*/})
+                    // res.on('end', ()=>{console.log("Finished streaming data for request response.")})
 
-                request_callback_hook(res);
-            }); //Create the request
+                    request_callback_hook(res);
+                }); //Create the request
 
             if(editable_options['reqbody'] != "")
                 req.write(options.reqbody);
                 post_request_hook(req, options);
                 req.end();
+            } catch(err) {
+                console.log(err);
+            }
         }
     }
 
