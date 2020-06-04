@@ -25,7 +25,6 @@ async function sendRequest(APIEndpoint, data, HTTPServiceClient) {
     err => {
       //I have not written code for handling errors yet.
       //Most likely, ill add proccesHTTPerror function to the HTTPClientEndPoint class.
-      alert("placeholder error logging" + err);
       return false;
     }
   );
@@ -44,10 +43,7 @@ function HTTPServiceButton(props) {
           reRoute => {
             if (reRoute) {
               history.push(props.route || "/");
-            } else
-              alert(
-                "Something went wrong. We're working on better way of notifying the user of failure."
-              );
+            }
           }
         );
       }}

@@ -1,7 +1,8 @@
 import React from "react";
 import HTTPServiceButton from "./HTTPServices/HTTPServiceButton";
 import TemplateStyles from "./TemplateStyles";
-
+//If your file in anyway differs from this file, do not make any changes. Keep this file as is.
+//Or the project will not compile. You will need to fix the changes you make, if you do so. Thanks.
 class RunPlaybackForm extends React.Component {
   constructor(props) {
     super(props);
@@ -102,7 +103,8 @@ class RunPlaybackForm extends React.Component {
     });
 
     retVal = (
-      <div>
+      <div className="card-body">
+        <h6>{"Configuration Settings for jobName: " + this.props.jobName}</h6>
         {this.buildForm()}
         {httpButtons}
         <input

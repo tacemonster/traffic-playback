@@ -2,6 +2,8 @@ import React from "react";
 import RunPlaybackForm from "./RunPlaybackForm";
 import TemplateStyles from "./TemplateStyles";
 import Routes from "../Playback/Routes";
+//If your file in anyway differs from this file, do not make any changes. Keep this file as is.
+//Or the project will not compile. You will need to fix the changes you make, if you do so. Thanks.
 
 class RunJobs extends React.Component {
   constructor(props) {
@@ -47,10 +49,12 @@ class RunJobs extends React.Component {
       this.props.jobs !== undefined &&
       this.props.jobs.length > 0
     ) {
-      list = this.props.jobs.map(jobId => {
+      list = this.props.jobs.map(data => {
         return (
-          <div key={jobId} className={TemplateStyles.listingStyle}>
-            <div className={TemplateStyles.jobListing}>JobID: {jobId}</div>
+          <div key={data.jobId} className={TemplateStyles.listingStyle}>
+            <div className={TemplateStyles.jobListing}>
+              JobName: {data.jobName}
+            </div>
             <input
               type="button"
               value="Deploy Job"
@@ -58,7 +62,7 @@ class RunJobs extends React.Component {
               onClick={e => {
                 this.setState({
                   renderRunForm: true,
-                  selectedJobId: jobId
+                  selectedJobId: data.jobId
                 });
               }}
             />
@@ -68,9 +72,11 @@ class RunJobs extends React.Component {
     }
 
     return (
-      <section className={TemplateStyles.listWrapper}>
-        <h1 className={TemplateStyles.listingHeader}>---Jobs Discovered---</h1>
-        {list}
+      <section className={TemplateStyles.listWrapper + " card"}>
+        <h1 className=" card-header bg-success text-light">
+          ---Jobs Discovered---
+        </h1>
+        <section className="card-body">{list}</section>
       </section>
     );
   };

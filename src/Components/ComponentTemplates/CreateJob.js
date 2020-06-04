@@ -2,21 +2,22 @@ import React from "react";
 import { useHistory } from "react-router-dom";
 import HTTPServiceButton from "./HTTPServices/HTTPServiceButton";
 import BackNavButton from "./BackNavButton";
-
+//If your file in anyway differs from this file, do not make any changes. Keep this file as is.
+//Or the project will not compile. You will need to fix the changes you make, if you do so. Thanks.
 class CreateJob extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      jobName: "name",
+      jobName: "Black-Friday-Job",
       active: 0,
-      jobStart: 0,
-      jobStop: 0,
-      secure: "#1#",
-      protocol: "",
-      host: "hostname",
-      uri: "uri",
-      method: "method",
-      sourceip: "1.1.1.1"
+      jobStart: "2020-11-27",
+      jobStop: "2020-11-28",
+      secure: "secure",
+      protocol: "HTTPS",
+      hostname: "www.bigsales.com",
+      uri: "/blackFridayBlowout",
+      method: "GET",
+      sourceip: "192.110.421.79"
     };
   }
 
@@ -52,7 +53,7 @@ class CreateJob extends React.Component {
         case "protocol":
           this.setState({ protocol: stateValue });
           break;
-        case "host":
+        case "hostname":
           this.setState({ hostname: stateValue });
           break;
         case "uri":
@@ -82,8 +83,8 @@ class CreateJob extends React.Component {
 
       if (key === "secure") {
         return (
-          <React.Fragment>
-            <h2>{key}</h2>
+          <section className="col-12 col-md-6">
+            <h6>{key}</h6>
             <select
               name={key}
               type="text"
@@ -91,16 +92,47 @@ class CreateJob extends React.Component {
               onChange={e => this.onChange(e)}
               placeholder="enter a value"
             >
-              <option>#1#</option>
-              <option>#2#</option>
-              <option>#3#</option>
+              <option>secure</option>
+              <option>insecure</option>
+              <option>all</option>
             </select>
-          </React.Fragment>
+          </section>
+        );
+      } else if (key === "method") {
+        return (
+          <section className="col-12 col-md-6">
+            <h6>{key}</h6>
+            <select
+              name={key}
+              type="text"
+              value={this.state[key]}
+              onChange={e => this.onChange(e)}
+              placeholder="enter a value"
+            >
+              <option>GET</option>
+              <option>PUT</option>
+              <option>POST</option>
+              <option>DELETE</option>
+            </select>
+          </section>
+        );
+      } else if (key === "jobStart" || key === "jobStop") {
+        return (
+          <section className="col-12 col-md-6">
+            <h6>{key}</h6>
+            <input
+              name={key}
+              type="date"
+              value={this.state[key]}
+              onChange={e => this.onChange(e)}
+              placeholder="enter a value"
+            />
+          </section>
         );
       } else
         return (
-          <React.Fragment>
-            <h2>{key}</h2>
+          <section className="col-12 col-md-6">
+            <h6>{key}</h6>
             <input
               name={key}
               type="text"
@@ -108,7 +140,7 @@ class CreateJob extends React.Component {
               onChange={e => this.onChange(e)}
               placeholder="enter a value"
             />
-          </React.Fragment>
+          </section>
         );
     });
     return form;
@@ -128,17 +160,18 @@ class CreateJob extends React.Component {
     );
 
     let retVal = (
-      <div>
-        <h6>Don's SQL inject me please. </h6>
-        <p>
-          On a serious note, this form does not have validation built into it.
-          It will down the line, but the server DB will accept values for all
-          fields seen below, even ones that are not valid.
-        </p>
-        {this.buildForm()}
-        <br></br>
-        {httpServiceButton}
-        <BackNavButton />
+      <div className="card">
+        <h3 className="card-header bg-success text-light">
+          //Schedule A Traffic Recording();
+        </h3>
+        <section className="card-body container">
+          <section class="row">{this.buildForm()}</section>
+          <br></br>
+          <section className="row">
+            {httpServiceButton}
+            <BackNavButton />
+          </section>
+        </section>
       </div>
     );
 

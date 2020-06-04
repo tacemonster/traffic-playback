@@ -14,9 +14,8 @@ import TrafficStatistic from "../StatisticSite/TrafficStatistic";
 import RealTimeMonitor from "../StatisticSite/RealTime";
 import CreateJob from "../ComponentTemplates/CreateJob";
 
-import PlaybackJobs from './newPlayback.js';
-import CaptureJobs from '../CaptureJob/newCaptureJob.js';
-
+import PlaybackJobs from "./newPlayback.js";
+import CaptureJobs from "../CaptureJob/newCaptureJob.js";
 
 class PlayBack extends React.Component {
   constructor(props) {
@@ -66,19 +65,14 @@ class PlayBack extends React.Component {
         <Body>
           <Switch>
             <Route exact path="/">
-              <div>
-                <h1>Notes</h1>
-                <div>
-                  {" "}
-                  We are in the progress of designing live updates to the front
-                  end. For example,if you create a new job and head over to the
-                  run jobs tab without exiting, then the app wiil not display
-                  the new job created. Just reload the app if this is the case.
-                  We'll add this realtime update to the app soon.Also, some
-                  forms do not validate input nor does the server validate their
-                  unvalidated input, so SQL injection and phony values are all
-                  possible. We're working on this. There's also misc
-                  inconsitencies like scroll bar not resetting. We'll fix this.
+              <div className="card">
+                <h4 className="card-header bg-success">Traffic Playback</h4>
+                <div className="card-body">
+                  This app supports traffic capture and playback. Capturing
+                  traffic involves recording HTTP, HTTPS, or both traffic into
+                  database for a specific Uri. Playback involves replaying that
+                  traffic to that uri in order to stress test hardware, code,
+                  and to discover faults and bugs in the system.
                 </div>
               </div>
             </Route>
@@ -97,9 +91,8 @@ class PlayBack extends React.Component {
             <Route exact path="/stats" component={TrafficStatistic}></Route>
             <Route exact path="/realtime" component={RealTimeMonitor}></Route>
 
-            <Route exact path="/playback" component={PlaybackJobs}/>
-            <Route exact path="/capture" component={CaptureJobs}/>
-
+            <Route exact path="/playback" component={PlaybackJobs} />
+            <Route exact path="/capture" component={CaptureJobs} />
           </Switch>
         </Body>
       </Router>
