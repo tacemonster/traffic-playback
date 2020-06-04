@@ -98,6 +98,11 @@ const args = require('yargs')
             desc: 'when the job will start',
             type: 'number'
         });
+        yargs.options('active', {
+            alias: 'a',
+            desc: 'This determines whether the capture job is currently running',
+            type: 'boolean'
+        });
         yargs.options('job-stop', {
             desc: 'when the job will stop',
             type: 'number'
@@ -152,6 +157,11 @@ const args = require('yargs')
         yargs.options('job-stop', {
             desc: 'when the job will stop',
             type: 'number'
+        });
+        yargs.options('active', {
+            alias: 'a',
+            desc: 'This determines whether the capture job is currently running',
+            boolean: true
         });
         yargs.options('secure', {
             alias: 's',
@@ -243,6 +253,14 @@ const args = require('yargs')
     .help()
     .argv
 
+Object.prototype.isEmpty = function() {
+    for(let key in this) {
+        if(this.hasOwnProperty(key))
+            return false;
+    }
+    return true;
+}
+
 let fill_in_default_values = function(default_options, cmd_options) {
     // Fill in default values, if they're not already specified
     for (let [key, value] of Object.entries(default_options)) {
@@ -287,7 +305,34 @@ let scrub_sql_input = function(options) {
 }
 
 let build_set_clause = function(options) {
-    return 1;
+    let sync_connection = new mysql_sync(connection_arguments);
+    let result;
+    try {
+        result = sync_connection.query('SELECT * FROM jobs WHERE jobId = ' + options.jobId);
+    } catch(err) {
+        throw 'Unable to get the information about the job with jobId ' + options.jobId;
+    }
+
+    // Get the information from the capture job in the database
+    let capture_job_row = undefined;
+    if(result.length === 1) {
+        capture_job_row = result[0];
+        capture_job_row.jobId = capture_job_row.jobID;
+    } else {
+        throw 'No row exists in the database with jobId ' + options.jobId;
+    }
+
+    // Fill in
+    let modified_options = {};
+    for (let [key, value] of Object.entries(capture_job_row)) {
+        if(options[key] !== undefined && options[key] !== capture_job_row[key]) {
+            modified_options[key] = options[key];
+        }
+    }
+
+
+
+    return modified_options;
 }
 
 if(args._.includes('capture-job-list')) {
@@ -302,8 +347,9 @@ if(args._.includes('capture-job-list')) {
         if(cmd_options.verbose === 0) {
             let abbrev_table = []
             for(let entry of results) {
-                abbrev_table.push({ jobId: entry.jobID, jobName: entry.jobName });
+                abbrev_table.push({ jobId: entry.jobID.toString(), jobName: entry.jobName.toString() });
             }
+            console.log(abbrev_table)
             console.table(abbrev_table);
         } else if(cmd_options.verbose > 0) {
             console.table(results);
@@ -330,9 +376,13 @@ if(args._.includes('capture-job-start')) {
 
     fill_in_default_values(default_options, cmd_options);
 
-    //Validation
+    // Validation
     if(cmd_options.jobName === undefined) {
         throw error('Job Name must be specified');
+    } if(cmd_options.active === undefined) {
+        throw error('Active must be specified');
+    } if(typeof cmd_options.active !== 'boolean') {
+        throw error('Active must be a boolean');
     }
     scrub_sql_input(cmd_options);
 
@@ -348,44 +398,31 @@ if(args._.includes('capture-job-start')) {
     connection.end();
 }
 
-if(args._.includes('capture-job-edit')) {
-    let connection = mysql.createConnection(connection_arguments);
-    connection.query('SELECT * FROM jobs;', function (error, results, fields) {
-        console.log(results);
-    });
-    connection.end();
-}
-
 // Code for editing a capture job
 if(args._.includes('capture-job-edit')) {
     let cmd_options = args;
     let default_options = {
-        verbose: 0,
-        active: true,
-        jobStart: Date.now(),
-        jobStop: Date.now() + 6000,
-        secure: null,
-        protocol: null,
-        host: null,
-        uri: null,
-        method: null,
-        sourceip: null
+        verbose: 0
     };
 
     fill_in_default_values(default_options, cmd_options);
 
-    //Validation
+    // Validation
     if(cmd_options.jobId === undefined) {
         throw error('Job ID must be specified');
+    } if(cmd_options.active !== undefined && typeof cmd_options.active !== 'boolean') {
+        throw error('Active must be a boolean');
     }
     scrub_sql_input(cmd_options);
 
+    console.log(build_set_clause(cmd_options));
+
     // SQL to create the job
-    let connection = mysql.createConnection(connection_arguments);
-    connection.query('UPDATE jobs SET ' + build_set_clause() + ' WHERE jobId = ' + cmd_options.jobId + ';', function (error, results, fields) {
-            console.log(results);
-    });
-    connection.end();
+    // let connection = mysql.createConnection(connection_arguments);
+    // connection.query('UPDATE jobs SET ' + build_set_clause() + ' WHERE jobId = ' + cmd_options.jobId + ';', function (error, results, fields) {
+    //         console.log(results);
+    // });
+    // connection.end();
 }
 
 // Code for playback option
