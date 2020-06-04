@@ -220,7 +220,7 @@ class RealTimeTable extends React.Component {
                 {col.secure && <td>{row.secure === 0 ? 'False' : 'True'}</td>}
                 {col.sourceip && <td style={{ maxWidth: '110px' }}>{row.sourceip}</td>}
                 {col.header && <td style={{ maxWidth: '150px' }}>{row.header}</td>}
-                {<td style={{textAlign: 'center'}}>{previewBtn}</td>}
+                {/* {<td style={{textAlign: 'center'}}>{previewBtn}</td>} */}
             </tr>
         );
     };
@@ -402,7 +402,7 @@ class RealTimeTable extends React.Component {
                                     {col.secure && <th>Secure</th>}
                                     {col.sourceip && <th>Source IP</th>}
                                     {col.header && <th>Header Info</th>}
-                                    {<th>Action</th>}
+                                    {/* {<th>Action</th>} */}
                                 </tr>
                             </thead>
                             <tbody>{this.state.content}</tbody>
