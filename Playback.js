@@ -337,7 +337,7 @@ let build_set_clause = function(options) {
         for(let [key, value] of Object.entries(modified_options)) {
             return_string = key + ' = ' + value + ', ';
         }
-        return_string =return_string.substring(0, return_string.length - 2);
+        return_string = return_string.substring(0, return_string.length - 2);
     }
 
     return return_string;
@@ -357,7 +357,6 @@ if(args._.includes('capture-job-list')) {
             for(let entry of results) {
                 abbrev_table.push({ jobId: entry.jobID.toString(), jobName: entry.jobName.toString() });
             }
-            console.log(abbrev_table)
             console.table(abbrev_table);
         } else if(cmd_options.verbose > 0) {
             console.table(results);
