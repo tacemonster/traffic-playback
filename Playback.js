@@ -330,9 +330,17 @@ let build_set_clause = function(options) {
         }
     }
 
+    let return_string = '';
+    if(modified_options.isEmpty) {
+        throw '';
+    } else {
+        for(let [key, value] of Object.entries(modified_options)) {
+            return_string = key + ' = ' + value + ', ';
+        }
+        return_string =return_string.substring(0, return_string.length - 2);
+    }
 
-
-    return modified_options;
+    return return_string;
 }
 
 if(args._.includes('capture-job-list')) {
@@ -415,14 +423,14 @@ if(args._.includes('capture-job-edit')) {
     }
     scrub_sql_input(cmd_options);
 
-    console.log(build_set_clause(cmd_options));
+    let set_clause = build_set_clause(cmd_options);
 
     // SQL to create the job
-    // let connection = mysql.createConnection(connection_arguments);
-    // connection.query('UPDATE jobs SET ' + build_set_clause() + ' WHERE jobId = ' + cmd_options.jobId + ';', function (error, results, fields) {
-    //         console.log(results);
-    // });
-    // connection.end();
+    let connection = mysql.createConnection(connection_arguments);
+    connection.query('UPDATE jobs SET ' + set_clause + ' WHERE jobId = ' + cmd_options.jobId + ';', function (error, results, fields) {
+            console.log(results);
+    });
+    connection.end();
 }
 
 // Code for playback option
