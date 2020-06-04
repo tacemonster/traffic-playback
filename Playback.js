@@ -332,7 +332,7 @@ let build_set_clause = function(options) {
 
     let return_string = '';
     if(modified_options.isEmpty) {
-        throw '';
+        throw 'The options specified are identical to the options in the database';
     } else {
         for(let [key, value] of Object.entries(modified_options)) {
             return_string = key + ' = ' + value + ', ';
