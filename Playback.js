@@ -4,6 +4,9 @@ const https = require('https');
 const mysql = require('mysql'); // DB driver.
 const sorted = require('sorted-array-functions');
 const fs = require ('fs');
+const mysql_sync = require('sync-mysql');
+const cli_progress = require('cli-progress');
+const console_table = require('console.table');
 let requests_cache = {};
 let hooks = []; // Keeps track of all the hooks
 
@@ -72,13 +75,13 @@ function post_request_hook(req, options) {
 const args = require('yargs')
     .scriptName("Playback")
     .usage('$0 <cmd> [args]')
-    .command('capture-job-list', 'get the list of jobs available to be played back', (yargs) => {},
-        function(argv) {
-            let connection = mysql.createConnection(connection_arguments);
-            connection.query('SELECT * FROM jobs;', function (error, results, fields) {
-                console.log(results);
-            });
-            connection.end();
+    .command('capture-job-list', 'get the list of jobs available to be played back', (yargs) => {
+        yargs.options('verbose', {
+            alias: 'v',
+            desc: 'specifies verbosity level',
+            type: 'count'
+        });
+        return yargs;
     })
     .command('capture-job-start', 'start a capture job', (yargs) => {
         yargs.options('verbose', {
@@ -91,33 +94,94 @@ const args = require('yargs')
             desc: 'specifies the name of the job',
             type: 'string'
         });
+        yargs.options('job-start', {
+            desc: 'when the job will start',
+            type: 'number'
+        });
+        yargs.options('job-stop', {
+            desc: 'when the job will stop',
+            type: 'number'
+        });
+        yargs.options('secure', {
+            alias: 's',
+            desc: 'TODO',
+            type: 'string'
+        });
+        yargs.options('protocol', {
+            alias: 'p',
+            desc: 'TODO',
+            type: 'string'
+        });
         yargs.options('hostname', {
             alias: 'host',
             desc: 'specifies which domain to capture requests from',
             type: 'string'
         });
-        yargs.options('regex', {
-            alias: 'r',
-            desc: 'specifies a regex string that will be used to filter what requests to capture',
+        yargs.options('uri', {
+            alias: 'p',
+            desc: 'TODO',
             type: 'string'
         });
-        yargs.options('port', {
+        yargs.options('method', {
             alias: 'p',
-            desc: 'specifies which port to use for http connections',
-            type: 'number'
+            desc: 'TODO',
+            type: 'string'
         });
-        yargs.options('secure-port', {
-            alias: 's',
-            desc: 'specifies which port to use for SSL',
-            type: 'number'
+        yargs.options('source-ip', {
+            alias: 'p',
+            desc: 'TODO',
+            type: 'string'
         });
         return yargs;
     })
-    .command('capture-job-end', 'stops a capture job by job', (yargs) => {
+    .command('capture-job-edit', 'stops a capture job by job', (yargs) => {
+        yargs.options('verbose', {
+            alias: 'v',
+            desc: 'specifies verbosity level',
+            type: 'count'
+        });
         yargs.options('job-id', {
             alias: 'i',
-            desc: 'specifies which capture job to stop',
+            desc: 'specifies capture job-id to edit',
             type: 'number'
+        });
+        yargs.options('job-start', {
+            desc: 'when the job will start',
+            type: 'number'
+        });
+        yargs.options('job-stop', {
+            desc: 'when the job will stop',
+            type: 'number'
+        });
+        yargs.options('secure', {
+            alias: 's',
+            desc: 'TODO',
+            type: 'string'
+        });
+        yargs.options('protocol', {
+            alias: 'p',
+            desc: 'TODO',
+            type: 'string'
+        });
+        yargs.options('hostname', {
+            alias: 'host',
+            desc: 'specifies which domain to capture requests from',
+            type: 'string'
+        });
+        yargs.options('uri', {
+            alias: 'u',
+            desc: 'TODO',
+            type: 'string'
+        });
+        yargs.options('method', {
+            alias: 'm',
+            desc: 'TODO',
+            type: 'string'
+        });
+        yargs.options('source-ip', {
+            alias: 'si',
+            desc: 'TODO',
+            type: 'string'
         });
         return yargs;
     })
@@ -188,52 +252,138 @@ let fill_in_default_values = function(default_options, cmd_options) {
     }
 }
 
-// Code for starting a capture job
-if(args._.includes('capture-job-start')) {
-    let cmd_options = Object.assign(cmd_options, args);
+let mysql_escape_string = function(str) {
+    if (typeof str != 'string')
+        return str;
+
+    return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
+        switch (char) {
+            case "\0":
+                return "\\0";
+            case "\x08":
+                return "\\b";
+            case "\x09":
+                return "\\t";
+            case "\x1a":
+                return "\\z";
+            case "\n":
+                return "\\n";
+            case "\r":
+                return "\\r";
+            case "\"":
+            case "'":
+            case "\\":
+            case "%":
+                return "\\"+char; // prepends a backslash to backslash, percent,
+                                  // and double/single quotes
+        }
+    });
+}
+
+let scrub_sql_input = function(options) {
+    for(let [key, value] of Object.entries(options)) {
+        options[key] = mysql_escape_string(value);
+    }
+}
+
+let build_set_clause = function(options) {
+    return 1;
+}
+
+if(args._.includes('capture-job-list')) {
+    let cmd_options = args;
     let default_options = {
         verbose: 0,
-        regex: '',
-        hostname: 'localhost',
-        port: 8080,
-        securePort: 8443,
+    };
+    fill_in_default_values(default_options, cmd_options);
+
+    let connection = mysql.createConnection(connection_arguments);
+    connection.query('SELECT * FROM jobs;', function (error, results, fields) {
+        if(cmd_options.verbose === 0) {
+            let abbrev_table = []
+            for(let entry of results) {
+                abbrev_table.push({ jobId: entry.jobID, jobName: entry.jobName });
+            }
+            console.table(abbrev_table);
+        } else if(cmd_options.verbose > 0) {
+            console.table(results);
+        }
+    });
+    connection.end();
+}
+
+// Code for starting a capture job
+if(args._.includes('capture-job-start')) {
+    let cmd_options = args;
+    let default_options = {
+        verbose: 0,
+        active: true,
+        jobStart: Date.now(),
+        jobStop: Date.now() + 6000,
+        secure: null,
+        protocol: null,
+        host: null,
+        uri: null,
+        method: null,
+        sourceip: null
     };
 
-    fill_in_default_values(default_options, cmd_options)
+    fill_in_default_values(default_options, cmd_options);
 
-    // Validation
-    if(cmd_options.jobId === undefined) {
-        throw error('Job ID must be specified');
+    //Validation
+    if(cmd_options.jobName === undefined) {
+        throw error('Job Name must be specified');
     }
-    if (!Number.isInteger(cmd_options.jobId)) {
-        throw error('Job ID must be an integer');
-    }
-    if(!(typeof(cmd_options.playbackSpeed) === 'number' && Number.isFinite(cmd_options.playbackSpeed))) {
-        throw error('Playback speed must be a number');
-    }
-    if (!Number.isInteger(cmd_options.port)) {
-        throw error('Port must be an integer');
-    }
-    if (!Number.isInteger(cmd_options.securePort)) {
-        throw error('Secure port must be an integer');
-    }
-    if (!Number.isInteger(cmd_options.requestBufferTime)) {
-        throw error('Request buffer time must be an integer');
-    }
+    scrub_sql_input(cmd_options);
 
     // SQL to create the job
+    let connection = mysql.createConnection(connection_arguments);
+    connection.query('INSERT INTO jobs (jobName, active, jobStart, jobStop, secure, protocol, host, uri, method, sourceip) ('
+        + cmd_options.jobName + ', ' + cmd_options.active + ', ' + cmd_options.jobStart + ', '
+        + cmd_options.jobStop + ', ' + cmd_options.secure + ', ' + cmd_options.protocol + ', '
+        + cmd_options.host + ', ' + cmd_options.uri + ', ' + cmd_options.method + ', '
+        + cmd_options.sourceip + ');', function (error, results, fields) {
+            console.log(results);
+    });
+    connection.end();
+}
+
+if(args._.includes('capture-job-edit')) {
     let connection = mysql.createConnection(connection_arguments);
     connection.query('SELECT * FROM jobs;', function (error, results, fields) {
         console.log(results);
     });
     connection.end();
-
 }
 
-if(args._.includes('capture-job-end')) {
+// Code for editing a capture job
+if(args._.includes('capture-job-edit')) {
+    let cmd_options = args;
+    let default_options = {
+        verbose: 0,
+        active: true,
+        jobStart: Date.now(),
+        jobStop: Date.now() + 6000,
+        secure: null,
+        protocol: null,
+        host: null,
+        uri: null,
+        method: null,
+        sourceip: null
+    };
+
+    fill_in_default_values(default_options, cmd_options);
+
+    //Validation
+    if(cmd_options.jobId === undefined) {
+        throw error('Job ID must be specified');
+    }
+    scrub_sql_input(cmd_options);
+
+    // SQL to create the job
     let connection = mysql.createConnection(connection_arguments);
-    connection.query('SELECT * FROM jobs;', function (error, results, fields) {
-        console.log(results);
+    connection.query('UPDATE jobs SET ' + build_set_clause() + ' WHERE jobId = ' + cmd_options.jobId + ';', function (error, results, fields) {
+            console.log(results);
     });
     connection.end();
 }
@@ -280,7 +430,7 @@ if(args._.includes('playback')) {
 
     cmd_options = Object.assign(cmd_options, args);
 
-    fill_in_default_values(default_options, cmd_options)
+    fill_in_default_values(default_options, cmd_options);
 
     // Validation
     if(cmd_options.jobId === undefined) {
@@ -310,7 +460,7 @@ if(args._.includes('playback')) {
 
     function delay_sql (ms_delay, param, func) {
     	return new Promise(() => {setTimeout(()=> {func(param)}, ms_delay)});
-    	}
+    }
 
     //This function dispatches a request
     function dispatch_request(options){
@@ -331,6 +481,8 @@ if(args._.includes('playback')) {
             'send_request': true
         };
         pre_request_hook(options, editable_options, req_options);
+
+        progress_bar.increment(1, { percent: Math.round((1 - ((max_time - 1) / max_time)) * 100) });
 
         if(editable_options.send_request === true) {
             //Select the correct request class
@@ -353,17 +505,34 @@ if(args._.includes('playback')) {
                 post_request_hook(req, options);
                 req.end();
             } catch(err) {
-                console.log(err);
+                // console.log(err);
             }
         }
     }
 
     // Attempt to create a connection using the arguments above.
     let connection = mysql.createConnection(connection_arguments);
-    let count_query = connection.query('SELECT COUNT(*) FROM raw', function(err, result, fields){
-        console.log(result[0])
-    });
 
+    // Get the number of requests and the job duration time for use in a progress bar
+    let sync_connection = new mysql_sync(connection_arguments);
+    let count;
+    let max_time;
+    try {
+        count = sync_connection.query('SELECT COUNT(*) FROM raw');
+        max_time = sync_connection.query('SELECT MAX(utime) FROM raw');
+    } catch(err) {
+        console.log(err)
+    }
+    count = count[0]["COUNT(*)"]
+    max_time = max_time[0]["MAX(utime)"] / cmd_options.playbackSpeed
+
+    const progress_bar = new cli_progress.SingleBar({
+        format: 'CLI Progress |' + '{bar}' + '| {percent}% | Duration {duration}/' + Math.round(max_time) + ' | {value}/{total} Requests Scheduled',
+        barCompleteChar: '\u2588',
+        barIncompleteChar: '\u2591',
+        hideCursor: true
+    });
+    progress_bar.start(count, 0, {});
 
 	let query = connection.query('SELECT * FROM raw;');
 
@@ -396,7 +565,7 @@ if(args._.includes('playback')) {
         // console.log(Date.now() + " delaying request " + row + "for " + sleep_time + " milliseconds.");
 
         newest_request_time = Date.now() + sleep_time;
-        delay_request(sleep_time,row,dispatch_request,null);
+        delay_request(sleep_time, row, dispatch_request, null);
 
         if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
         	// console.log("pausing scheduling");
@@ -405,7 +574,7 @@ if(args._.includes('playback')) {
         	delay_sql(cmd_options.requestBufferTime/100, newest_request_time, scheduler);
         }
 	})
-	.on('end', function(){
+	.on('end', function() {
 	});
 
     //Close the connection.
