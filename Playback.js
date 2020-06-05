@@ -90,7 +90,7 @@ const args = require('yargs')
             type: 'count'
         });
         yargs.options('job-name', {
-            alias: 'j',
+            alias: 'n',
             desc: 'specifies the name of the job',
             type: 'string'
         });
@@ -149,6 +149,11 @@ const args = require('yargs')
             alias: 'i',
             desc: 'specifies capture job-id to edit',
             type: 'number'
+        });
+        yargs.options('job-name', {
+            alias: 'n',
+            desc: 'specifies the name of the job',
+            type: 'string'
         });
         yargs.options('job-start', {
             desc: 'when the job will start',
@@ -331,11 +336,11 @@ let build_set_clause = function(options) {
     }
 
     let return_string = '';
-    if(modified_options.isEmpty) {
+    if(modified_options.isEmpty()) {
         throw 'The options specified are identical to the options in the database';
     } else {
         for(let [key, value] of Object.entries(modified_options)) {
-            return_string = key + ' = ' + value + ', ';
+            return_string = return_string + key + ' = ' + value + ', ';
         }
         return_string = return_string.substring(0, return_string.length - 2);
     }
@@ -353,13 +358,14 @@ if(args._.includes('capture-job-list')) {
     let connection = mysql.createConnection(connection_arguments);
     connection.query('SELECT * FROM jobs;', function (error, results, fields) {
         if(cmd_options.verbose === 0) {
-            let abbrev_table = []
+            // let abbrev_table = []
             for(let entry of results) {
-                abbrev_table.push({ jobId: entry.jobID.toString(), jobName: entry.jobName.toString() });
+                // abbrev_table.push({ jobId: entry.jobID, jobName: entry.jobName });
+                console.log('jobID: ' + entry.jobID + ' jobName: ' + entry.jobName);
             }
-            console.table(abbrev_table);
+            // console.log(abbrev_table)
         } else if(cmd_options.verbose > 0) {
-            console.table(results);
+            console.log(results);
         }
     });
     connection.end();
@@ -393,14 +399,20 @@ if(args._.includes('capture-job-start')) {
     }
     scrub_sql_input(cmd_options);
 
+    console.log('INSERT INTO jobs (jobName, active, jobStart, jobStop, secure, protocol, host, uri, method, sourceip) VALUES ('
+    + cmd_options.jobName + ', ' + (cmd_options.active ? 1 : 0) + ', ' + cmd_options.jobStart + ', '
+    + cmd_options.jobStop + ', ' + cmd_options.secure + ', ' + cmd_options.protocol + ', '
+    + cmd_options.host + ', ' + cmd_options.uri + ', ' + cmd_options.method + ', '
+    + cmd_options.sourceip + ');')
+
     // SQL to create the job
     let connection = mysql.createConnection(connection_arguments);
-    connection.query('INSERT INTO jobs (jobName, active, jobStart, jobStop, secure, protocol, host, uri, method, sourceip) ('
-        + cmd_options.jobName + ', ' + cmd_options.active + ', ' + cmd_options.jobStart + ', '
+    connection.query('INSERT INTO jobs (jobName, active, jobStart, jobStop, secure, protocol, host, uri, method, sourceip) VALUES ('
+        + cmd_options.jobName + ', ' + cmd_options.active ? 1 : 0 + ', ' + cmd_options.jobStart + ', '
         + cmd_options.jobStop + ', ' + cmd_options.secure + ', ' + cmd_options.protocol + ', '
         + cmd_options.host + ', ' + cmd_options.uri + ', ' + cmd_options.method + ', '
         + cmd_options.sourceip + ');', function (error, results, fields) {
-            console.log(results);
+            console.log('Insert operation complete');
     });
     connection.end();
 }
@@ -426,8 +438,8 @@ if(args._.includes('capture-job-edit')) {
 
     // SQL to create the job
     let connection = mysql.createConnection(connection_arguments);
-    connection.query('UPDATE jobs SET ' + set_clause + ' WHERE jobId = ' + cmd_options.jobId + ';', function (error, results, fields) {
-            console.log(results);
+    connection.query('UPDATE jobs SET ' + set_clause + ' WHERE jobID = ' + cmd_options.jobId + ';', function (error, results, fields) {
+        console.log('Update operation complete');
     });
     connection.end();
 }
@@ -526,8 +538,6 @@ if(args._.includes('playback')) {
         };
         pre_request_hook(options, editable_options, req_options);
 
-        progress_bar.increment(1, { percent: Math.round((1 - ((max_time - 1) / max_time)) * 100) });
-
         if(editable_options.send_request === true) {
             //Select the correct request class
             let webreq = editable_options['secure'] ? https : http;
@@ -561,17 +571,20 @@ if(args._.includes('playback')) {
     let sync_connection = new mysql_sync(connection_arguments);
     let count;
     let max_time;
+    let min_time;
     try {
         count = sync_connection.query('SELECT COUNT(*) FROM raw');
         max_time = sync_connection.query('SELECT MAX(utime) FROM raw');
+        min_time = sync_connection.query('SELECT MIN(utime) FROM raw');
     } catch(err) {
         console.log(err)
     }
     count = count[0]["COUNT(*)"]
-    max_time = max_time[0]["MAX(utime)"] / cmd_options.playbackSpeed
+    min_time = min_time[0]["MIN(utime)"];
+    let total_time = (max_time[0]["MAX(utime)"] - min_time) / cmd_options.playbackSpeed;
 
     const progress_bar = new cli_progress.SingleBar({
-        format: 'CLI Progress |' + '{bar}' + '| {percent}% | Duration {duration}/' + Math.round(max_time) + ' | {value}/{total} Requests Scheduled',
+        format: 'CLI Progress |' + '{bar}' + '| {percent}% | Duration {duration}/' + Math.round(total_time) + ' | {value}/{total} Requests Scheduled',
         barCompleteChar: '\u2588',
         barIncompleteChar: '\u2591',
         hideCursor: true
@@ -610,6 +623,8 @@ if(args._.includes('playback')) {
 
         newest_request_time = Date.now() + sleep_time;
         delay_request(sleep_time, row, dispatch_request, null);
+
+        progress_bar.increment(1, { percent: Math.round((1 - ((total_time - (row.utime - min_time)) / total_time)) * 100) });
 
         if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
         	// console.log("pausing scheduling");
