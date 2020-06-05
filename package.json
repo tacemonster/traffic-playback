@@ -26,9 +26,9 @@
     "react-scripts": "3.4.1",
     "sorted-array-functions": "^1.2.0",
     "sync-mysql": "^3.0.1",
-    "yargs": "^13.3.2"
+    "yargs": "^13.3.2",
     "reactstrap": "^8.4.1",
-    "sorted-array-functions": "1.2.0",
+    "sorted-array-functions": "1.2.0"
   },
   "scripts": {
     "start": "react-scripts start",
