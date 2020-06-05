@@ -11,6 +11,7 @@ class RunJobs extends React.Component {
     this.state = {
       renderRunForm: false,
       selectedJobId: 0,
+      selectedJobName: "",
       jobs: props.jobs
     };
   }
@@ -26,6 +27,7 @@ class RunJobs extends React.Component {
       <RunPlaybackForm
         callMeMaybe={this.callMeMaybe}
         jobId={this.state.selectedJobId}
+        jobName={this.state.selectedJobName}
         HTTPButtons={[
           {
             APIEndPoint: Routes.run,
@@ -62,7 +64,8 @@ class RunJobs extends React.Component {
               onClick={e => {
                 this.setState({
                   renderRunForm: true,
-                  selectedJobId: data.jobId
+                  selectedJobId: data.jobId,
+                  selectedJobName: data.jobName
                 });
               }}
             />

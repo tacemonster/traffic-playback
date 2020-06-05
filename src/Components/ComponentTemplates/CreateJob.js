@@ -28,25 +28,23 @@ class CreateJob extends React.Component {
     //if no invalid chars are detected
     let invalidCharTest = /[^1234567890]/g.test(stateValue);
     let stateNumberValue = Number(stateValue);
-    if (
-      (inputName === "jobStart" ||
-        inputName === "jobStop" ||
-        inputName === "active") &&
-      !invalidCharTest
-    ) {
+    if (inputName === "active" && !invalidCharTest) {
       switch (inputName) {
-        case "jobStart":
-          this.setState({ jobStart: stateNumberValue });
-          break;
-        case "jobStop":
-          this.setState({ jobStop: stateNumberValue });
-          break;
         case "active":
           this.setState({ active: stateNumberValue });
           break;
       }
     } else {
       switch (inputName) {
+        case "jobName":
+          this.setState({ jobName: stateValue });
+          break;
+        case "jobStart":
+          this.setState({ jobStart: stateValue });
+          break;
+        case "jobStop":
+          this.setState({ jobStop: stateValue });
+          break;
         case "secure":
           this.setState({ secure: stateValue });
           break;

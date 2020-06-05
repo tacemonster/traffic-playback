@@ -1,16 +1,17 @@
 import React, { Component } from "react";
 import DatePicker from "react-datepicker";
-import styles from './newPlayback.css';
+import styles from "./newPlayback.css";
 
 import "react-datepicker/dist/react-datepicker.css";
 
 // CSS Modules, react-datepicker-cssmodules.css
 // import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 
-const Date = (props) => {
+const Date = props => {
   return (
-    <div className="tab" >
-      <DatePicker className="tab" 
+    <div className="tab">
+      <DatePicker
+        className="tab"
         selected={props.selected}
         onChange={props.onChange}
         onSelect={props.onSelect}
@@ -22,4 +23,3 @@ const Date = (props) => {
 };
 
 export default Date;
-
