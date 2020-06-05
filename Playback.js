@@ -83,123 +83,123 @@ const args = require('yargs')
         });
         return yargs;
     })
-    .command('capture-job-start', 'start a capture job', (yargs) => {
-        yargs.options('verbose', {
-            alias: 'v',
-            desc: 'specifies verbosity level',
-            type: 'count'
-        });
-        yargs.options('job-name', {
-            alias: 'n',
-            desc: 'specifies the name of the job',
-            type: 'string'
-        });
-        yargs.options('job-start', {
-            desc: 'when the job will start',
-            type: 'number'
-        });
-        yargs.options('active', {
-            alias: 'a',
-            desc: 'This determines whether the capture job is currently running',
-            type: 'boolean'
-        });
-        yargs.options('job-stop', {
-            desc: 'when the job will stop',
-            type: 'number'
-        });
-        yargs.options('secure', {
-            alias: 's',
-            desc: 'TODO',
-            type: 'string'
-        });
-        yargs.options('protocol', {
-            alias: 'p',
-            desc: 'TODO',
-            type: 'string'
-        });
-        yargs.options('hostname', {
-            alias: 'host',
-            desc: 'specifies which domain to capture requests from',
-            type: 'string'
-        });
-        yargs.options('uri', {
-            alias: 'p',
-            desc: 'TODO',
-            type: 'string'
-        });
-        yargs.options('method', {
-            alias: 'p',
-            desc: 'TODO',
-            type: 'string'
-        });
-        yargs.options('source-ip', {
-            alias: 'p',
-            desc: 'TODO',
-            type: 'string'
-        });
-        return yargs;
-    })
-    .command('capture-job-edit', 'stops a capture job by job', (yargs) => {
-        yargs.options('verbose', {
-            alias: 'v',
-            desc: 'specifies verbosity level',
-            type: 'count'
-        });
-        yargs.options('job-id', {
-            alias: 'i',
-            desc: 'specifies capture job-id to edit',
-            type: 'number'
-        });
-        yargs.options('job-name', {
-            alias: 'n',
-            desc: 'specifies the name of the job',
-            type: 'string'
-        });
-        yargs.options('job-start', {
-            desc: 'when the job will start',
-            type: 'number'
-        });
-        yargs.options('job-stop', {
-            desc: 'when the job will stop',
-            type: 'number'
-        });
-        yargs.options('active', {
-            alias: 'a',
-            desc: 'This determines whether the capture job is currently running',
-            boolean: true
-        });
-        yargs.options('secure', {
-            alias: 's',
-            desc: 'TODO',
-            type: 'string'
-        });
-        yargs.options('protocol', {
-            alias: 'p',
-            desc: 'TODO',
-            type: 'string'
-        });
-        yargs.options('hostname', {
-            alias: 'host',
-            desc: 'specifies which domain to capture requests from',
-            type: 'string'
-        });
-        yargs.options('uri', {
-            alias: 'u',
-            desc: 'TODO',
-            type: 'string'
-        });
-        yargs.options('method', {
-            alias: 'm',
-            desc: 'TODO',
-            type: 'string'
-        });
-        yargs.options('source-ip', {
-            alias: 'si',
-            desc: 'TODO',
-            type: 'string'
-        });
-        return yargs;
-    })
+    // .command('capture-job-start', 'start a capture job', (yargs) => {
+    //     yargs.options('verbose', {
+    //         alias: 'v',
+    //         desc: 'specifies verbosity level',
+    //         type: 'count'
+    //     });
+    //     yargs.options('job-name', {
+    //         alias: 'n',
+    //         desc: 'specifies the name of the job',
+    //         type: 'string'
+    //     });
+    //     yargs.options('job-start', {
+    //         desc: 'when the job will start',
+    //         type: 'number'
+    //     });
+    //     yargs.options('active', {
+    //         alias: 'a',
+    //         desc: 'This determines whether the capture job is currently running',
+    //         type: 'boolean'
+    //     });
+    //     yargs.options('job-stop', {
+    //         desc: 'when the job will stop',
+    //         type: 'number'
+    //     });
+    //     yargs.options('secure', {
+    //         alias: 's',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     yargs.options('protocol', {
+    //         alias: 'p',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     yargs.options('hostname', {
+    //         alias: 'host',
+    //         desc: 'specifies which domain to capture requests from',
+    //         type: 'string'
+    //     });
+    //     yargs.options('uri', {
+    //         alias: 'p',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     yargs.options('method', {
+    //         alias: 'p',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     yargs.options('source-ip', {
+    //         alias: 'p',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     return yargs;
+    // })
+    // .command('capture-job-edit', 'stops a capture job by job', (yargs) => {
+    //     yargs.options('verbose', {
+    //         alias: 'v',
+    //         desc: 'specifies verbosity level',
+    //         type: 'count'
+    //     });
+    //     yargs.options('job-id', {
+    //         alias: 'i',
+    //         desc: 'specifies capture job-id to edit',
+    //         type: 'number'
+    //     });
+    //     yargs.options('job-name', {
+    //         alias: 'n',
+    //         desc: 'specifies the name of the job',
+    //         type: 'string'
+    //     });
+    //     yargs.options('job-start', {
+    //         desc: 'when the job will start',
+    //         type: 'number'
+    //     });
+    //     yargs.options('job-stop', {
+    //         desc: 'when the job will stop',
+    //         type: 'number'
+    //     });
+    //     yargs.options('active', {
+    //         alias: 'a',
+    //         desc: 'This determines whether the capture job is currently running',
+    //         boolean: true
+    //     });
+    //     yargs.options('secure', {
+    //         alias: 's',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     yargs.options('protocol', {
+    //         alias: 'p',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     yargs.options('hostname', {
+    //         alias: 'host',
+    //         desc: 'specifies which domain to capture requests from',
+    //         type: 'string'
+    //     });
+    //     yargs.options('uri', {
+    //         alias: 'u',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     yargs.options('method', {
+    //         alias: 'm',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     yargs.options('source-ip', {
+    //         alias: 'si',
+    //         desc: 'TODO',
+    //         type: 'string'
+    //     });
+    //     return yargs;
+    // })
     .command('playback', 'plays back captured traffic', (yargs) => {
         yargs.options('job-id', {
             alias: 'i',
