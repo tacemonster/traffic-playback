@@ -584,7 +584,7 @@ if(args._.includes('playback')) {
     let total_time = (max_time[0]["MAX(utime)"] - min_time) / cmd_options.playbackSpeed;
 
     const progress_bar = new cli_progress.SingleBar({
-        format: 'CLI Progress |' + '{bar}' + '| {percent}% | Duration {duration}/' + Math.round(total_time) + ' | {value}/{total} Requests Scheduled',
+        format: 'CLI Progress |' + '{bar}' + '| {percentage}% | {value}/{total} Requests Scheduled' + '| Duration {duration}/' + Math.round(total_time),
         barCompleteChar: '\u2588',
         barIncompleteChar: '\u2591',
         hideCursor: true
@@ -624,7 +624,7 @@ if(args._.includes('playback')) {
         newest_request_time = Date.now() + sleep_time;
         delay_request(sleep_time, row, dispatch_request, null);
 
-        progress_bar.increment(1, { percent: Math.round((1 - ((total_time - (row.utime - min_time)) / total_time)) * 100) });
+        progress_bar.increment();
 
         if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
         	// console.log("pausing scheduling");
