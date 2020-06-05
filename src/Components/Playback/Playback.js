@@ -14,6 +14,10 @@ import TrafficStatistic from "../StatisticSite/TrafficStatistic";
 import RealTimeMonitor from "../StatisticSite/RealTime";
 import CreateJob from "../ComponentTemplates/CreateJob";
 
+import PlaybackJobs from './newPlayback.js';
+import CaptureJobs from '../CaptureJob/newCaptureJob.js';
+
+
 class PlayBack extends React.Component {
   constructor(props) {
     super(props);
@@ -92,6 +96,10 @@ class PlayBack extends React.Component {
             </Route>
             <Route exact path="/stats" component={TrafficStatistic}></Route>
             <Route exact path="/realtime" component={RealTimeMonitor}></Route>
+
+            <Route exact path="/playback" component={PlaybackJobs}/>
+            <Route exact path="/capture" component={CaptureJobs}/>
+
           </Switch>
         </Body>
       </Router>

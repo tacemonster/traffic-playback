@@ -35,6 +35,13 @@ const hosts = [
   { jobName: "thirdJob", host: "ghi.com" }
 ];
 
+
+const playbackRecord = {
+	jobName: '' ,
+	startTime:'' ,
+	endTime: ''
+};
+
 router.get("/", (req, res) => {
   mySqlConnect.query("SELECT * from raw", (error, results, fields) => {
     if (error) throw error;
@@ -101,6 +108,7 @@ router.post("/run", (req, res) => {
 
 function validatePostJobs(jobInfo) {
   const schema = {
+
     jobName: Joi.string()
       .min(4)
       .regex(/(''|[^'])*/)

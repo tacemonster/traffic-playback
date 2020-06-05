@@ -14,7 +14,7 @@ class App extends React.Component {
               title: "Run a Job",
               route: "/runcapture"
             },
-            { title: "Statistic", route: "/stats" },
+            { title: "Statistics", route: "/stats" },
             { title: "Real Time", route: "/realtime" }
           ]}
         />

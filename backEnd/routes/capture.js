@@ -9,7 +9,6 @@ router.post("/", (req, res) => {
   const { error } = validatePostJobs(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-
   mySqlConnect.query("INSERT INTO trafficDB.jobs (jobName, jobStart, jobStop)  VALUES (?, ?, ?) ", [req.body.jobName, req.body.startTime, req.body.endTime], (error, results, fields) => {
     if (error) throw error;
     else res.send(`${req.body.jobName} is currently in progress`);

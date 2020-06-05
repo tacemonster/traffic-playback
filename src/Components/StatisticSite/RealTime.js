@@ -1,6 +1,7 @@
 import React from 'react';
-import { Dropdown, Table, Form, Button, Spinner, Row, Col, Alert } from 'react-bootstrap';
+import { Dropdown, Table, Form, Button, Spinner, Row, Col, Alert, Modal } from 'react-bootstrap';
 import style from './TrafficStatistic.module.css';
+import Routes from '../Playback/Routes';
 
 class RealTimeMonitor extends React.Component {
     constructor(props) {
@@ -10,14 +11,20 @@ class RealTimeMonitor extends React.Component {
             loading: false,
             data: null,
             error: false,
+            open: false,
+            modalTitle: null,
+            modalContent: null
         };
         this.realtimeHandler = null;
         this.interval = 60000;  // default update traffic by every 60s
+        this.limit = 50;  // default number of records to fetch each time.
     }
 
     getRealTimeData = () => {
         this.setState({ loading: true });
-        fetch('http://ec2-54-152-230-158.compute-1.amazonaws.com:8000/api/play/realtime?limit=50')
+        let url = `${Routes.getRealtime}?limit=${this.limit}`;
+        // let url = `http://ec2-54-152-230-158.compute-1.amazonaws.com:7999/api/play/realtime?limit=${this.limit}`;
+        fetch(url)
             .then((res) => {
                 if (res.json) {
                     return res.json().then((json) => {
@@ -65,6 +72,41 @@ class RealTimeMonitor extends React.Component {
         this.handleGet(this.interval);
     }
 
+    handleLimit = (newLimit) => {
+        this.limit = newLimit;
+    }
+
+    handleOpenModal = (e) => {
+        this.setState({ open: true });
+        let req = e.target.name.split('\0');
+        let url = `${Routes.getPreview}?id=${req[0]}`;
+        // let url = `http://ec2-54-152-230-158.compute-1.amazonaws.com:8000/api/preview?id=${req[0]}`;
+        fetch(url)
+            .then((res) => {
+                return res.text();
+            })
+            .then((result) => {
+                this.setState({
+                    modalContent: result,
+                    modalTitle: req[1],
+                });
+            })
+            .catch((err) => {
+                this.setState({
+                    modalContent: err,
+                    modalTitle: req[1],
+                });
+            });
+    }
+
+    handleCloseModal = () => {
+        this.setState({
+            open: false,
+            modalTitle: null,
+            modalContent: null,
+        });
+    }
+
     componentDidMount() {
         this.getRealTimeData();
         this.handleGet(this.interval);
@@ -83,7 +125,23 @@ class RealTimeMonitor extends React.Component {
                     error={this.state.error}
                     msHandler={this.handleUpdate}
                     refreshHandler={this.handleRefresh}
+                    limitHandler={this.handleLimit}
+                    modalOpenHandler={this.handleOpenModal}
                 />
+
+                <Modal show={this.state.open} onHide={this.handleCloseModal} size="xl">
+                    <Modal.Header closeButton>
+                        <Modal.Title className={style.previewTitle}>{this.state.modalTitle}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <iframe srcDoc={this.state.modalContent} className={style.previewContant}></iframe>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="danger" onClick={this.handleCloseModal}>
+                            Close
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
         );
     }
@@ -101,6 +159,7 @@ class RealTimeTable extends React.Component {
                 host: true,
                 uri: true,
                 method: true,
+                reqBody: false,
                 sourceip: false,
                 protocol: false,
                 secure: false,
@@ -143,6 +202,11 @@ class RealTimeTable extends React.Component {
         let rowTime = new Date(row.utime * 1000);
         let date = `${rowTime.getMonth() + 1}/${rowTime.getDate()} ${rowTime.getHours()}:${rowTime.getMinutes()}:${rowTime.getSeconds()}`;
         let col = this.state.columnEnabled;
+        let previewBtn = (
+            <Button name={`${row.id}\0${row.secure === 1? 'https://' : 'http://'}${row.host}${row.uri}`} variant="success" size='sm' onClick={this.props.modalOpenHandler} className={style.previewBtn}>
+                Preview
+            </Button>
+        );
         return (
             <tr key={row.id}>
                 {col.id && <td>{row.id}</td>}
@@ -150,11 +214,13 @@ class RealTimeTable extends React.Component {
                 {col.date && <td>{date}</td>}
                 {col.host && <td style={{ maxWidth: '150px' }}>{row.host}</td>}
                 {col.uri && <td style={{ maxWidth: '150px' }}>{row.uri}</td>}
+                {col.method && <td style={{ maxWidth: '50px' }}>{row.method}</td>}
+                {col.reqBody && <td>{JSON.stringify(row.reqbody)}</td>}
                 {col.protocol && <td>{row.protocol}</td>}
                 {col.secure && <td>{row.secure === 0 ? 'False' : 'True'}</td>}
-                {col.method && <td style={{ maxWidth: '50px' }}>{row.method}</td>}
                 {col.sourceip && <td style={{ maxWidth: '110px' }}>{row.sourceip}</td>}
                 {col.header && <td style={{ maxWidth: '150px' }}>{row.header}</td>}
+                {/* {<td style={{textAlign: 'center'}}>{previewBtn}</td>} */}
             </tr>
         );
     };
@@ -228,6 +294,10 @@ class RealTimeTable extends React.Component {
         this.setState({ error: false });
     }
 
+    handleUpdateLimit = (e) => {
+        this.props.limitHandler(parseInt(e.target.options[e.target.selectedIndex].value))
+    }
+
     render() {
         let col = this.state.columnEnabled;
         return (
@@ -237,6 +307,7 @@ class RealTimeTable extends React.Component {
                         <label
                             htmlFor="columns-dropdown"
                             className={style.optionLabel}
+                            title='select what info to display'
                         >
                             Display Columns:
                         </label>
@@ -256,8 +327,26 @@ class RealTimeTable extends React.Component {
                     </Col>
                     <Col xs={12} sm={6} lg={3}>
                         <label
+                            htmlFor="update-limit"
+                            className={style.optionLabel}
+                            title='number of records to fetch each time'
+                        >
+                            Limit:
+                        </label>
+                        <Form.Control as="select" id="update-limit" onChange={this.handleUpdateLimit} disabled={this.props.loading ? true : false} defaultValue='50'>
+                            <option value='20'>20 records</option>
+                            <option value='50'>50 records</option>
+                            <option value='100'>100 records</option>
+                            <option value='200'>200 records</option>
+                            <option value='500'>500 records</option>
+                            <option value='1000'>1000 records</option>
+                        </Form.Control>
+                    </Col>
+                    <Col xs={12} sm={6} lg={3}>
+                        <label
                             htmlFor="update-time"
                             className={style.optionLabel}
+                            title='frequency to update monitor'
                         >
                             Update By:
                         </label>
@@ -273,7 +362,7 @@ class RealTimeTable extends React.Component {
                         </Form.Control>
                     </Col>
                     <Col xs={12} sm={6} lg={3}>
-                        <label htmlFor="refresh" className={style.optionLabel}>
+                        <label htmlFor="refresh" className={style.optionLabel} title='refresh monitor'>
                             Refresh
                         </label>
                         <Button
@@ -307,11 +396,13 @@ class RealTimeTable extends React.Component {
                                     {col.date && <th>Time</th>}
                                     {col.host && <th>Host</th>}
                                     {col.uri && <th>Uri</th>}
+                                    {col.method && <th>Method</th>}
+                                    {col.reqBody && <th>Req Body</th>}
                                     {col.protocol && <th>Protocol</th>}
                                     {col.secure && <th>Secure</th>}
-                                    {col.method && <th>Method</th>}
                                     {col.sourceip && <th>Source IP</th>}
                                     {col.header && <th>Header Info</th>}
+                                    {/* {<th>Action</th>} */}
                                 </tr>
                             </thead>
                             <tbody>{this.state.content}</tbody>

@@ -19,6 +19,7 @@ app.use("/api/capture", capture);
 app.use("/api/login", login);
 app.use("/api/init", init);
 app.use("/api/createjob", createjob);
+// app.use("/api/preview", require('./routes/preview'));
 
 const port = process.env.PORT || 7999;
 app.listen(port, () => console.log(`Listening on port ${port}...`));

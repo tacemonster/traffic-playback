@@ -11,6 +11,7 @@ import {
 import Axios from "axios";
 import Joi from "joi-browser";
 import DatePicker from "./datePicker";
+import "./newCaptureJob.css";
 
 class Capture extends Component {
   state = {
@@ -137,7 +138,7 @@ class Capture extends Component {
         </h5>
         <form className="form" onSubmit={this.handleSubmit}>
           <Row>
-            <Col md={12}>
+            <Col md={4}>
               <FormGroup>
                 <label>Capture Job Name</label>
                 <Input
@@ -149,12 +150,44 @@ class Capture extends Component {
                 <FormFeedback>Oh noes! that name is already taken</FormFeedback>
               </FormGroup>
             </Col>
+            <Col md={4}>
+              <FormGroup>
+                <label>URI</label>
+                <Input className = "captureForm"
+                  value={this.state.capture.uri}
+                  onChange={this.handleChange}
+                  name="uri"
+                />
+              </FormGroup>
+            </Col>
+	    </Row>
+	    <Row>
+            <Col md={4}>
+              <FormGroup>
+                <label>Host</label>
+                <Input className = "captureForm"
+                  value={this.state.capture.host}
+                  onChange={this.handleChange}
+                  name="host"
+                />
+              </FormGroup>
+            </Col>
+            <Col md={4}>
+              <FormGroup>
+                <label>Source IP</label>
+                <Input className = "captureForm"
+                  value={this.state.capture.sourceIP}
+                  onChange={this.handleChange}
+                  name="sourceIP"
+                />
+              </FormGroup>
+            </Col>
           </Row>
 
           <Row>
-            <Col md={6}>
+            <Col md={4}>
               <FormGroup>
-                <label>Start Date</label>
+                <label>Start Date and Time</label>
                 <DatePicker
                   selected={this.state.startDate}
                   value={this.state.startDate}
@@ -164,9 +197,9 @@ class Capture extends Component {
               </FormGroup>
             </Col>
 
-            <Col md={6}>
+            <Col md={4}>
               <FormGroup>
-                <label>End Date</label>
+                <label>End Date and Time</label>
                 <DatePicker
                   selected={this.state.endDate}
                   value={this.state.capture.endDate}
@@ -180,43 +213,10 @@ class Capture extends Component {
           <Row>
             <Col md={4}>
               <FormGroup>
-                <label>URI</label>
-                <Input
-                  value={this.state.capture.uri}
-                  onChange={this.handleChange}
-                  name="uri"
-                />
-              </FormGroup>
-            </Col>
-            <Col md={4}>
-              <FormGroup>
-                <label>Host</label>
-                <Input
-                  value={this.state.capture.host}
-                  onChange={this.handleChange}
-                  name="host"
-                />
-              </FormGroup>
-            </Col>
-            <Col md={4}>
-              <FormGroup>
-                <label>Source IP</label>
-                <Input
-                  value={this.state.capture.sourceIP}
-                  onChange={this.handleChange}
-                  name="sourceIP"
-                />
-              </FormGroup>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={12}>
-              <FormGroup>
                 <div>Method</div>
                 <FormGroup check inline>
                   <Label check>
-                    <Input
+                    <Input className = "captureForm"
                       type="checkbox"
                       onChange={this.handleChange}
                       name="get"
@@ -227,7 +227,7 @@ class Capture extends Component {
                 </FormGroup>
                 <FormGroup check inline>
                   <Label check>
-                    <Input
+                    <Input className = "captureForm"
                       type="checkbox"
                       onChange={this.handleChange}
                       name="post"
@@ -238,7 +238,7 @@ class Capture extends Component {
                 </FormGroup>
                 <FormGroup check inline>
                   <Label check>
-                    <Input
+                    <Input className = "captureForm"
                       type="checkbox"
                       onChange={this.handleChange}
                       name="put"
@@ -249,10 +249,8 @@ class Capture extends Component {
                 </FormGroup>
               </FormGroup>
             </Col>
-          </Row>
 
-          <Row>
-            <Col md={12}>
+            <Col md={4}>
               <FormGroup>
                 <div>Protocol</div>
                 <FormGroup check inline>
@@ -283,12 +281,12 @@ class Capture extends Component {
           </Row>
 
           <Row>
-            <Col md={12}>
+            <Col md={4}>
               <FormGroup>
                 <div>Secure</div>
                 <FormGroup check inline>
                   <Label check>
-                    <Input
+                    <Input className = "captureForm"
                       type="checkbox"
                       onChange={this.handleChange}
                       name="on"

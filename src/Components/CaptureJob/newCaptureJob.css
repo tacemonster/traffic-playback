@@ -1,8 +1,15 @@
 .tab {
-  width: 2000px;
+  width: 200px;
 
 }
 
 .react-datepicker-ignore-onclickoutside {
-        width: 2000px;
+        width: 200px;
 }
+
+.captureDate {
+
+	width: 250px;
+
+}
+

@@ -1,0 +1,1 @@
+INSERT INTO jobs(jobName) VALUES ('Catch All');
