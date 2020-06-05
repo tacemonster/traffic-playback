@@ -1,8 +1,7 @@
 class Routes {
-  static port = "7999";
-  static init = "http://localhost:" + Routes.port + "/api/init";
-  static run = "http://localhost:" + Routes.port + "/api/play/run";
-  static createjob = "http://localhost:" + Routes.port + "/api/createjob";
+  static init = "/api/init";
+  static run = "/api/play/run";
+  static createjob = "/api/createjob";
 }
 
 export default Routes;
