@@ -8,6 +8,8 @@
     "@testing-library/user-event": "^7.2.1",
     "bootstrap": "^4.4.1",
     "chart.js": "^2.9.3",
+    "cli-progress": "^3.8.2",
+    "console.table": "^0.10.0",
     "joi": "^14.3.1",
     "joi-browser": "^13.4.0",
     "mariadb": "^2.3.1",
@@ -22,9 +24,11 @@
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
+    "sorted-array-functions": "^1.2.0",
+    "sync-mysql": "^3.0.1",
+    "yargs": "^13.3.2"
     "reactstrap": "^8.4.1",
     "sorted-array-functions": "1.2.0",
-    "yargs": "^13.3.0"
   },
   "scripts": {
     "start": "react-scripts start",
