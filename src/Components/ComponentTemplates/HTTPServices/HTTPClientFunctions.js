@@ -31,8 +31,7 @@ class HTTPClientFunctions {
   //This function returns a true/false which indicates whether or not creating a new job
   //job is succesful.
   static createjob = function(resp) {
-    if (resp && resp.status === 200) return true;
-    else return false;
+    return true;
   };
 }
 

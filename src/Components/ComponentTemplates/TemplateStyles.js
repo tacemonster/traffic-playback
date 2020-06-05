@@ -18,6 +18,7 @@ class TemplateStyles {
   static listingStyle = "row align-center justify-center listing-style";
   static listingWrapper = "listing-wrapper";
   static jobListing = "col-8";
+  static cardInput = "w-75 h-25";
 }
 
 export default TemplateStyles;
