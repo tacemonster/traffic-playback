@@ -82,7 +82,7 @@ CREATE TABLE headerrel (
 );
 
 CREATE VIEW v_record AS
-SELECT r.recordID, utime, secure, protocol, host, uri, method, r.sourceip, headers, jobID
+SELECT jobID AS JobID, r.recordID AS RecordID, utime AS UTime, secure AS Secure, protocol AS Protocol, host AS Host, uri AS URI, method AS Method, r.sourceip AS SourceIP, headers AS Headers, body AS Body
 FROM records AS r
 	JOIN protocols AS p ON r.protocol = p.protocolID
 	JOIN hosts AS h ON r.host = h.hostID
