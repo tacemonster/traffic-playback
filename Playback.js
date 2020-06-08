@@ -370,8 +370,8 @@ if(args._.includes('capture-job-start')) {
     let default_options = {
         verbose: 0,
         active: true,
-        jobStart: Date.now(),
-        jobStop: Date.now() + 6000,
+        jobStart: null,
+        jobStop: null,
         secure: null,
         protocol: null,
         host: null,
@@ -517,7 +517,7 @@ if(args._.includes('playback')) {
         // console.log("Sending request. Time: " + Date.now())
 
         let req_headers = new Object();
-        let header_array = options.headers.split("\r\n");
+        let header_array = options.header.split("\r\n");
         for (i = 0; i < header_array.length - 1; i += 2)
         {
             req_headers[header_array[i]] = header_array[i+1];
@@ -526,10 +526,22 @@ if(args._.includes('playback')) {
         let req_options = {"host":cmd_options.hostname, "setHost":false, "path":options.uri, "method":options.method, "headers":req_headers, "port":8080};
         let editable_options = {
             'secure': options.secure,
-            'reqbody': options.body,
+            'reqbody': options.reqbody,
             'send_request': true
         };
         pre_request_hook(options, editable_options, req_options);
+
+
+        let eta = Math.round(progress_bar.payload.aeta - ((options.utime - prev_utime) / cmd_options.playbackSpeed));
+        let percent = Math.round((total_time - eta) / total_time * 100);
+        percent = Number.isNaN(percent) ? percent : 100;
+        prev_utime = options.utime;
+
+        progress_bar.increment(1, { aeta: eta, percent: percent });
+        if(progress_bar.value >= count) {
+            progress_bar.increment(0, { aeta: 0, percent: 100 })
+            progress_bar.stop();
+        }
 
         if(editable_options.send_request === true) {
             //Select the correct request class
@@ -543,9 +555,9 @@ if(args._.includes('playback')) {
                 req = webreq.request(req_options, (res) => {
                     // Code for testing
                     res.setEncoding("utf-8")
-                    res.on('data', (data)=>{console.log(data)})
-                    res.on('end', ()=>{console.log("Finished streaming data for request response.")})
-                    req.on('error', (e) => { console.log('problem with request: ' + e.message); });
+                    // res.on('data', (data)=>{console.log(data)})
+                    // res.on('end', ()=>{console.log("Finished streaming data for request response.")})
+                    // req.on('error', (e) => { console.log('problem with request: ' + e.message); });
 
                     request_callback_hook(res);
                 }); //Create the request
@@ -555,7 +567,7 @@ if(args._.includes('playback')) {
                 post_request_hook(req, options);
                 req.end();
             } catch(err) {
-            //     console.log(err);
+                console.log(err);
             }
         }
     }
@@ -569,18 +581,19 @@ if(args._.includes('playback')) {
     let max_time;
     let min_time;
     try {
-        count = sync_connection.query('SELECT COUNT(*) FROM v_record where jobid = ' + cmd_options.jobId);
-        max_time = sync_connection.query('SELECT MAX(utime) FROM v_record where jobid = ' + cmd_options.jobId);
-        min_time = sync_connection.query('SELECT MIN(utime) FROM v_record where jobid = ' + cmd_options.jobId);
+        count = sync_connection.query('SELECT COUNT(*) FROM v_record where jobID = ' + cmd_options.jobId);
+        max_time = sync_connection.query('SELECT MAX(utime) FROM v_record where jobID = ' + cmd_options.jobId);
+        min_time = sync_connection.query('SELECT MIN(utime) FROM v_record where jobID = ' + cmd_options.jobId);
     } catch(err) {
         console.log(err)
     }
     count = count[0]["COUNT(*)"]
     min_time = min_time[0]["MIN(utime)"];
     let total_time = (max_time[0]["MAX(utime)"] - min_time) / cmd_options.playbackSpeed;
+    console.log(min_time, max_time, total_time)
 
     const progress_bar = new cli_progress.SingleBar({
-        format: 'CLI Progress | {bar} | ETA {aeta}s | {percent}% Complete | {value}/{total} Requests Scheduled | Duration {duration_formatted}',
+        format: 'CLI Progress | {bar} | ETA {aeta}s | {percent}% Complete | {value}/{total} Requests Sent | Duration {duration_formatted}',
         barCompleteChar: '\u2588',
         barIncompleteChar: '\u2591',
         hideCursor: true
@@ -591,7 +604,7 @@ if(args._.includes('playback')) {
     let prev_utime;
 
 
-	let query = connection.query('SELECT * FROM v_record where jobid = ' + cmd_options.jobId);
+	let query = connection.query('SELECT * FROM v_record where jobID = ' + cmd_options.jobId);
 
 	let scheduler = function(new_req_time) {
         if(new_req_time < (Date.now() + cmd_options.requestBufferTime)) {
@@ -599,7 +612,7 @@ if(args._.includes('playback')) {
             connection.resume();
         }
         else {
-            delay_sql(cmd_options.requestBufferTime / (100 * cmd_options.playbackSpeed), new_req_time, scheduler);
+            delay_sql(cmd_options.requestBufferTime / 100, new_req_time, scheduler);
         }
     }
 
@@ -615,10 +628,7 @@ if(args._.includes('playback')) {
             prev_utime = row.utime;
     	}
 
-        let eta = Math.round(progress_bar.payload.aeta - ((row.utime - prev_utime) / cmd_options.playbackSpeed));
-        let percent = Math.round((total_time - eta) / total_time * 100);
-        prev_utime = row.utime;
-
+        console.log(row.utime)
         let sleep_time = (row.utime * 1000) - base_request_time;
         sleep_time = sleep_time / cmd_options.playbackSpeed;
         sleep_time = sleep_time - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
@@ -629,16 +639,11 @@ if(args._.includes('playback')) {
         newest_request_time = Date.now() + sleep_time;
         delay_request(sleep_time, row, dispatch_request, null);
 
-        progress_bar.increment(1, { aeta: eta, percent: percent });
-        if(progress_bar.value >= count) {
-            progress_bar.stop();
-        }
-
         if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
         	// console.log("pausing scheduling");
         	connection.pause();
 
-        	delay_sql(cmd_options.requestBufferTime/100, newest_request_time, scheduler);
+        	delay_sql(cmd_options.requestBufferTime / 100, newest_request_time, scheduler);
         }
 	})
 	.on('end', function() {
