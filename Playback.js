@@ -534,7 +534,7 @@ if(args._.includes('playback')) {
 
         let eta = Math.round(progress_bar.payload.aeta - ((options.utime - prev_utime) / cmd_options.playbackSpeed));
         let percent = Math.round((total_time - eta) / total_time * 100);
-        percent = Number.isNaN(percent) ? percent : 100;
+        percent = Number.isNaN(percent) ? 100 : percent;
         prev_utime = options.utime;
 
         progress_bar.increment(1, { aeta: eta, percent: percent });
@@ -590,7 +590,6 @@ if(args._.includes('playback')) {
     count = count[0]["COUNT(*)"]
     min_time = min_time[0]["MIN(utime)"];
     let total_time = (max_time[0]["MAX(utime)"] - min_time) / cmd_options.playbackSpeed;
-    console.log(min_time, max_time, total_time)
 
     const progress_bar = new cli_progress.SingleBar({
         format: 'CLI Progress | {bar} | ETA {aeta}s | {percent}% Complete | {value}/{total} Requests Sent | Duration {duration_formatted}',
@@ -604,7 +603,7 @@ if(args._.includes('playback')) {
     let prev_utime;
 
 
-	let query = connection.query('SELECT * FROM v_record where jobID = ' + cmd_options.jobId);
+	let query = connection.query('SELECT * FROM v_record where jobID = ' + cmd_options.jobId + ' ORDER BY utime ASC');
 
 	let scheduler = function(new_req_time) {
         if(new_req_time < (Date.now() + cmd_options.requestBufferTime)) {
@@ -628,7 +627,6 @@ if(args._.includes('playback')) {
             prev_utime = row.utime;
     	}
 
-        console.log(row.utime)
         let sleep_time = (row.utime * 1000) - base_request_time;
         sleep_time = sleep_time / cmd_options.playbackSpeed;
         sleep_time = sleep_time - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
