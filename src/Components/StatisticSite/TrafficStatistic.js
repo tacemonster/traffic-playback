@@ -15,7 +15,7 @@ class TrafficStatistic extends React.Component {
 
     componentDidMount = () => {
         let url = Routes.getAllRaw;
-        // let url = 'http://ec2-54-152-230-158.compute-1.amazonaws.com:8000/api/play';
+        // let url = 'http://ec2-54-152-230-158.compute-1.amazonaws.com:7999/api/play';
         fetch(url)
             .then((res) => {
                 if (res.json) {
@@ -27,7 +27,7 @@ class TrafficStatistic extends React.Component {
                 }
             })
             .then((result) => {
-                console.log(result);
+                // console.log(result);
                 this.setState({ data: result, error: false });
             })
             .catch((err) => {
@@ -201,31 +201,41 @@ class StatsChartOptionsBar extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            uriList: ['/home', '/home/uri', '/traffic/abc/dsassfcsaaaaaaaaa', '/hello', '/hi', '/abc'],
+            uriList: ['/', '/home/testing/uri', '/traffic/abc/dsassfcsaaaaaaaaa', '/hello', '/hi', '/abc'], // default uri for testing
             uriListVisible: [true, true, true, true, true, true],
+            uriChecked: [false, false, false, false, false, false],
             applyLoading: false,
             error: false,
             errorText: 'Something wrong!',
         };
-        this.maxSelectedUri = 5;
         this.selectedUri = [];
-        this.startDate = '';
-        this.endDate = '';
         this.receivedData = false;
+        // get today's date and 14 days before today for default chart setting.
+        let date = new Date();
+        this.endDate = `${date.getFullYear().toString()}-${('0' + (date.getMonth() + 1).toString()).slice(-2)}-${('0' + (date.getDate()).toString()).slice(-2)}`;
+        date.setDate(date.getDate() - 13);
+        this.startDate = `${date.getFullYear().toString()}-${('0' + (date.getMonth() + 1).toString()).slice(-2)}-${('0' + (date.getDate()).toString()).slice(-2)}`;
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.receivedData === false) {
             if (nextProps.data) {
-                let uriList = getUriList(nextProps.data);
+                let uriList = getUriList(nextProps.data).sort();
                 let num = uriList.length;
                 let visible = [];
-                for (let i = 0; i < num; ++i) visible.push(true);
+                let checked = [];
+                for (let i = 0; i < num; ++i) {
+                    visible.push(true);
+                    checked.push(uriList[i] === '/' ? true : false);  // add '/' as default checked for default chart
+                }
+                this.selectedUri.push('/');
                 this.setState({
-                    uriList: uriList.sort(),
+                    uriList: uriList,
                     uriListVisible: visible,
+                    uriChecked: checked,
                 });
                 this.receivedData = true;
+                this.handleApply();  // apply default chart, for the last 14 days
             }
         }
     }
@@ -238,16 +248,7 @@ class StatsChartOptionsBar extends React.Component {
             let uri = uripart[1];
             if (uri && uri !== '') {
                 if (event.target.checked === true) {
-                    // allow maximum of 5 uris selected.
-                    if (this.selectedUri.length >= this.maxSelectedUri) {
-                        event.target.checked = false;
-                        this.setState({
-                            error: true,
-                            errorText: 'Only maximum of 5 URIs allowed',
-                        });
-                    } else {
-                        this.selectedUri.push(uri);
-                    }
+                    this.selectedUri.push(uri);
                 } else {
                     let index = this.selectedUri.indexOf(uri);
                     if (index > -1) {
@@ -331,6 +332,7 @@ class StatsChartOptionsBar extends React.Component {
                 >
                     <Form.Check
                         onChange={this.handleCheckBox}
+                        defaultChecked={this.state.uriChecked[i]}
                         type={'checkbox'}
                         id={`uri::${uri}`}
                         label={`${uri}`}
@@ -352,6 +354,7 @@ class StatsChartOptionsBar extends React.Component {
                         <Form.Control
                             type="date"
                             id="start-date"
+                            defaultValue={this.startDate}
                             className={style.dateInput}
                             onChange={this.setDate}
                             disabled={this.state.applyLoading ? true : false}
@@ -364,6 +367,7 @@ class StatsChartOptionsBar extends React.Component {
                         <Form.Control
                             type="date"
                             id="end-date"
+                            defaultValue={this.endDate}
                             className={style.dateInput}
                             onChange={this.setDate}
                             disabled={this.state.applyLoading ? true : false}
@@ -486,11 +490,11 @@ function getDataFromTimeRange(start, end, requestedUri, data) {
     if (!data) {
         return null;
     }
-    let startDateStr = start.toString().split('-').join('.');
-    let startDate = new Date(startDateStr);
+    let startStrs = start.toString().split('-');
+    let startDate = new Date(parseInt(startStrs[0]), parseInt(startStrs[1]) - 1, parseInt(startStrs[2]));
     let unixStart = startDate.getTime();
-    let endDateStr = end.toString().split('-').join('.');
-    let endDate = new Date(endDateStr);
+    let endStrs = end.toString().split('-');
+    let endDate = new Date(parseInt(endStrs[0]), parseInt(endStrs[1]) - 1, parseInt(endStrs[2]));
     endDate.setDate(endDate.getDate() + 1);
     let unixEnd = endDate.getTime();
     let numDays = 0;
@@ -500,7 +504,7 @@ function getDataFromTimeRange(start, end, requestedUri, data) {
     result.labels = [];
     result.unixTimeLabels = [];
 
-    let current = new Date(startDateStr);
+    let current = new Date(parseInt(startStrs[0]), parseInt(startStrs[1]) - 1, parseInt(startStrs[2]));
     while (current <= endDate) {
         ++numDays;
         let label = `${current.getMonth() + 1}-${current.getDate()}`;
