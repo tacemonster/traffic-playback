@@ -6,15 +6,17 @@ const sorted = require('sorted-array-functions');
 const fs = require ('fs');
 const mysql_sync = require('sync-mysql');
 const cli_progress = require('cli-progress');
+const columnify = require('columnify');
+require('dotenv').config()
 let hooks = []; // Keeps track of all the hooks
 
 
 //Connection settings like username, password, and etc.
 const connection_arguments = {
-    host:"localhost",
-    user:"traffic",
-    password:"12345",
-    database:"trafficDB"
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB
 }
 
 /**********************************************************************************************************************/
@@ -363,18 +365,22 @@ if(args._.includes('capture-job-list')) {
     let connection = mysql.createConnection(connection_arguments);
     connection.query('SELECT * FROM jobs;', function (error, results, fields) {
         if (error) throw error;
-        if(cmd_options.verbose === 0) {
-            for(let entry of results) {
-                console.log('jobID: ' + entry.jobID + ' jobName: ' + entry.jobName);
-            }
+
+        if(results.length === 0) {
+            console.log('There are no jobs to display');
+        } else if(cmd_options.verbose === 0) {
+            let fields = ['jobID', 'jobName'];
+            console.log(columnify(results, {
+                columns: fields,
+                columnSplitter: ' | '
+            }));
         } else if(cmd_options.verbose > 0) {
-            for(let entry of results) {
-                let result_string;
-                for(let [key, value] of Object.entries(entry)) {
-                    result_string += key + ": " + value + ' ';
-                }
-                console.log(result_string);
-            }
+            let fields = Object.keys(results[0]);
+            delete fields.isEmpty;
+            console.log(columnify(results, {
+                columns: fields,
+                columnSplitter: ' | '
+            }));
         }
     });
     connection.end();
@@ -630,7 +636,6 @@ if(args._.includes('playback')) {
 
         let scheduler = function(new_req_time) {
             if(new_req_time < (Date.now() + cmd_options.requestBufferTime)) {
-                // console.log("resuming scheduling");
                 connection.resume();
             }
             else {
@@ -667,7 +672,6 @@ if(args._.includes('playback')) {
             delay_request(sleep_time, row, dispatch_request, null);
 
             if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
-                // console.log("pausing scheduling");
                 connection.pause();
 
                 delay_sql(cmd_options.requestBufferTime / 100, newest_request_time, scheduler);
