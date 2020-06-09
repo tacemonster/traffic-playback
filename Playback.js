@@ -6,13 +6,8 @@ const sorted = require('sorted-array-functions');
 const fs = require ('fs');
 const mysql_sync = require('sync-mysql');
 const cli_progress = require('cli-progress');
-const console_table = require('console.table');
-let requests_cache = {};
 let hooks = []; // Keeps track of all the hooks
 
-let base_request_time = 0;
-let base_local_time = 0;
-let newest_request_time = 0;
 
 //Connection settings like username, password, and etc.
 const connection_arguments = {
@@ -22,9 +17,9 @@ const connection_arguments = {
     database:"trafficDB"
 }
 
-function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-   }
+/**********************************************************************************************************************/
+/************************************************** UTILITY FUNCTIONS *************************************************/
+/**********************************************************************************************************************/
 
 // Exporting the events and the register_hook function so plugins can use it
 let methods = {
@@ -236,6 +231,16 @@ const args = require('yargs')
             desc: 'specifies where to send requests to',
             type: 'string'
         });
+        yargs.options('skip-ssl-validity-check', {
+            alias: 'ssvc',
+            desc: 'specifies whether or not to skip the ssl validity check',
+            boolean: true
+        });
+        yargs.options('force-host-into-header', {
+            alias: 'force-host, fh',
+            desc: 'forces the request header\'s Host value to be set to the value specified by hostname',
+            boolean: true
+        });
         yargs.options('backend-server', {
             alias: 'b',
             desc: 'specifies which server will run the playback job',
@@ -257,6 +262,11 @@ const args = require('yargs')
     })
     .help()
     .argv
+let cmd_options = args;
+
+/**********************************************************************************************************************/
+/************************************************** UTILITY FUNCTIONS *************************************************/
+/**********************************************************************************************************************/
 
 Object.prototype.isEmpty = function() {
     for(let key in this) {
@@ -266,15 +276,16 @@ Object.prototype.isEmpty = function() {
     return true;
 }
 
-let fill_in_default_values = function(default_options, cmd_options) {
+let fill_in_default_values = function(default_options, options) {
     // Fill in default values, if they're not already specified
     for (let [key, value] of Object.entries(default_options)) {
-        if(cmd_options[key] === undefined) {
-            cmd_options[key] = value;
+        if(options[key] === undefined) {
+            options[key] = value;
         }
     }
 }
 
+// Clean inputs to avoid MySQL injections
 let mysql_escape_string = function(str) {
     if (typeof str != 'string')
         return str;
@@ -327,7 +338,7 @@ let build_set_clause = function(options) {
         throw 'No row exists in the database with jobId ' + options.jobId;
     }
 
-    // Fill in
+    // Create an object containing only the changes made by the user
     let modified_options = {};
     for (let [key, value] of Object.entries(capture_job_row)) {
         if(options[key] !== undefined && options[key] !== capture_job_row[key]) {
@@ -335,14 +346,15 @@ let build_set_clause = function(options) {
         }
     }
 
-    if(modified_options.isEmpty()) {
-        throw 'The options specified are identical to the options in the database';
-    }
     return modified_options;
 }
 
+
+/**********************************************************************************************************************/
+/*************************************************** CAPTURE JOB LIST *************************************************/
+/**********************************************************************************************************************/
+
 if(args._.includes('capture-job-list')) {
-    let cmd_options = args;
     let default_options = {
         verbose: 0,
     };
@@ -350,13 +362,11 @@ if(args._.includes('capture-job-list')) {
 
     let connection = mysql.createConnection(connection_arguments);
     connection.query('SELECT * FROM jobs;', function (error, results, fields) {
+        if (error) throw error;
         if(cmd_options.verbose === 0) {
-            // let abbrev_table = []
             for(let entry of results) {
-                // abbrev_table.push({ jobId: entry.jobID, jobName: entry.jobName });
                 console.log('jobID: ' + entry.jobID + ' jobName: ' + entry.jobName);
             }
-            // console.log(abbrev_table)
         } else if(cmd_options.verbose > 0) {
             console.log(results);
         }
@@ -364,9 +374,13 @@ if(args._.includes('capture-job-list')) {
     connection.end();
 }
 
+
+/**********************************************************************************************************************/
+/************************************************** CAPTURE JOB START *************************************************/
+/**********************************************************************************************************************/
+
 // Code for starting a capture job
 if(args._.includes('capture-job-start')) {
-    let cmd_options = args;
     let default_options = {
         verbose: 0,
         active: true,
@@ -409,9 +423,13 @@ if(args._.includes('capture-job-start')) {
     connection.end();
 }
 
+
+/**********************************************************************************************************************/
+/*************************************************** CAPTURE JOB EDIT *************************************************/
+/**********************************************************************************************************************/
+
 // Code for editing a capture job
 if(args._.includes('capture-job-edit')) {
-    let cmd_options = args;
     let default_options = {
         verbose: 0
     };
@@ -421,33 +439,56 @@ if(args._.includes('capture-job-edit')) {
     // Validation
     if(cmd_options.jobId === undefined) {
         throw error('Job ID must be specified');
-    } if(cmd_options.active !== undefined && typeof cmd_options.active !== 'boolean') {
-        throw error('Active must be a boolean');
     }
     scrub_sql_input(cmd_options);
 
     let set_clause = build_set_clause(cmd_options);
 
     // SQL to create the job
+    if(set_clause.isEmpty()) {
+        console.log('No changes made - user specified options match the values already present in the database');
+    } else {
     let connection = mysql.createConnection(connection_arguments);
-    connection.query('UPDATE jobs SET ? WHERE jobID = ' + cmd_options.jobId + ';', set_clause, function (error, results, fields) {
-        if(error) throw error;
-        console.log('Update operation complete');
-    });
-    connection.end();
+        connection.query('UPDATE jobs SET ? WHERE jobID = ' + cmd_options.jobId + ';', set_clause, function (error, results, fields) {
+            if(error) throw error;
+            console.log('Update operation complete');
+        });
+        connection.end();
+    }
 }
+
+
+/**********************************************************************************************************************/
+/********************************************* PLAYBACK UTILITY FUNCTIONS *********************************************/
+/**********************************************************************************************************************/
+
+//This function forgoes completing a task for ms_delay milliseconds. //For our purposes, it is used to space out requests.
+function delay_request (ms_delay,options,resolve,reject) {
+    //The returned Promise will execute function resolve, which is dispatch_request defined right below, after ms_delay elapses.
+    return new Promise(() => {setTimeout(()=> {resolve(options)},ms_delay)});
+}
+
+function delay_sql (ms_delay, param, func) {
+    return new Promise(() => {setTimeout(()=> {func(param)}, ms_delay)});
+}
+
+/**********************************************************************************************************************/
+/****************************************************** PLAYBACK  *****************************************************/
+/**********************************************************************************************************************/
 
 // Code for playback option
 if(args._.includes('playback')) {
     // Build object out of arguments
-    let cmd_options = {};
+    cmd_options = {};
     let default_options = {
         verbose: 0,
         playbackSpeed: 1,
         hostname: 'localhost',
         port: 8080,
         securePort: 8443,
-        requestBufferTime: 10000
+        requestBufferTime: 10000,
+        skipSslValidityCheck: true,
+        forceHostIntoHeader: false
     };
 
     if(args.configFile !== null) {
@@ -478,7 +519,6 @@ if(args._.includes('playback')) {
     }
 
     cmd_options = Object.assign(cmd_options, args);
-
     fill_in_default_values(default_options, cmd_options);
 
     // Validation
@@ -501,18 +541,13 @@ if(args._.includes('playback')) {
         throw error('Request buffer time must be an integer');
     }
 
-    //This function forgoes completing a task for ms_delay milliseconds. //For our purposes, it is used to space out requests.
-    function delay_request (ms_delay,options,resolve,reject) {
-        //The returned Promise will execute function resolve, which is dispatch_request defined right below, after ms_delay elapses.
-        return new Promise(() => {setTimeout(()=> {resolve(options)},ms_delay)});
-    }
-
-    function delay_sql (ms_delay, param, func) {
-    	return new Promise(() => {setTimeout(()=> {func(param)}, ms_delay)});
+    // Disable SSL if user has specified the command line option
+    if(cmd_options.skipSslValidityCheck) {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     }
 
     //This function dispatches a request
-    function dispatch_request(options){
+    function dispatch_request(options) {
         //request options url path and etc
         // console.log("Sending request. Time: " + Date.now())
 
@@ -523,7 +558,14 @@ if(args._.includes('playback')) {
             req_headers[header_array[i]] = header_array[i+1];
         }
 
-        let req_options = {"host":cmd_options.hostname, "setHost":false, "path":options.uri, "method":options.method, "headers":req_headers, "port":8080};
+        let req_options = {"hostname":cmd_options.hostname, "setHost":false, "path":options.uri, "headers": req_headers, "method":options.method, "port":8080};
+        // const req_options = {
+        //     hostname: 'flaviocopes.com',
+        //     port: 443,
+        //     setHost: false,
+        //     path: '/todos',
+        //     method: 'GET'
+        //   }
         let editable_options = {
             'secure': options.secure,
             'reqbody': options.reqbody,
@@ -547,17 +589,21 @@ if(args._.includes('playback')) {
             //Select the correct request class
             let webreq = editable_options['secure'] ? https : http;
             req_options.port = editable_options['secure'] ? cmd_options.securePort : cmd_options.port;
-            req_options.headers.Host = cmd_options.hostname;
+
+            // Overrides the 'Host' key in the request headers if the user has specified this option
+            if(cmd_options.forceHostIntoHeader) {
+                req_options.headers.Host = cmd_options.hostname;
+            }
             let req;
             // console.log(options);
-            // console.log(req_options);
+            console.log(req_options);
             try {
                 req = webreq.request(req_options, (res) => {
                     // Code for testing
                     res.setEncoding("utf-8")
-                    // res.on('data', (data)=>{console.log(data)})
-                    // res.on('end', ()=>{console.log("Finished streaming data for request response.")})
-                    // req.on('error', (e) => { console.log('problem with request: ' + e.message); });
+                    res.on('data', (data)=>{console.log(data)})
+                    res.on('end', ()=>{console.log("Finished streaming data for request response.")})
+                    req.on('error', (e) => { console.log('problem with request: ' + e.message); });
 
                     request_callback_hook(res);
                 }); //Create the request
@@ -572,14 +618,12 @@ if(args._.includes('playback')) {
         }
     }
 
-    // Attempt to create a connection using the arguments above.
-    let connection = mysql.createConnection(connection_arguments);
-
     // Get the number of requests and the job duration time for use in a progress bar
     let sync_connection = new mysql_sync(connection_arguments);
     let count;
     let max_time;
     let min_time;
+    let prev_utime;
     try {
         count = sync_connection.query('SELECT COUNT(*) FROM v_record where jobID = ' + cmd_options.jobId);
         max_time = sync_connection.query('SELECT MAX(utime) FROM v_record where jobID = ' + cmd_options.jobId);
@@ -597,56 +641,63 @@ if(args._.includes('playback')) {
         barIncompleteChar: '\u2591',
         hideCursor: true
     });
-    if(count >= 1) {
+    if(count <= 0) {
+        console.log('Playback ended -- There are no requests associated with jobId ' + cmd_options.jobId);
+    } else {
         progress_bar.start(count, 0, { aeta: Math.round(total_time), percent: 0 });
+
+        let scheduler = function(new_req_time) {
+            if(new_req_time < (Date.now() + cmd_options.requestBufferTime)) {
+                // console.log("resuming scheduling");
+                connection.resume();
+            }
+            else {
+                delay_sql(cmd_options.requestBufferTime / 100, new_req_time, scheduler);
+            }
+        }
+
+        // Attempt to create a connection using the arguments above.
+        let connection = mysql.createConnection(connection_arguments);
+        let query = connection.query('SELECT * FROM v_record where jobID = ' + cmd_options.jobId + ' ORDER BY utime ASC');
+
+        // Variables needed for scheduling requests
+        let base_request_time = 0;
+        let base_local_time = 0;
+        let newest_request_time = 0;
+
+        query.on('error', function(err) {
+        })
+        .on('fields', function(fields) {
+        })
+        .on('result', function(row) {
+            //Must be our first row.
+            if(base_request_time == 0)
+            {
+                base_request_time = row.utime * 1000;
+                prev_utime = row.utime;
+            }
+
+            let sleep_time = (row.utime * 1000) - base_request_time;
+            sleep_time = sleep_time / cmd_options.playbackSpeed;
+            sleep_time = sleep_time - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
+
+            //This line dispatches a request after a timeout determined by sleep_time for a given row/request.
+            // console.log(Date.now() + " delaying request " + row + "for " + sleep_time + " milliseconds.");
+
+            newest_request_time = Date.now() + sleep_time;
+            delay_request(sleep_time, row, dispatch_request, null);
+
+            if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
+                // console.log("pausing scheduling");
+                connection.pause();
+
+                delay_sql(cmd_options.requestBufferTime / 100, newest_request_time, scheduler);
+            }
+        })
+        .on('end', function() {
+        });
+
+        //Close the connection.
+        connection.end();
     }
-    let prev_utime;
-
-
-	let query = connection.query('SELECT * FROM v_record where jobID = ' + cmd_options.jobId + ' ORDER BY utime ASC');
-
-	let scheduler = function(new_req_time) {
-        if(new_req_time < (Date.now() + cmd_options.requestBufferTime)) {
-            // console.log("resuming scheduling");
-            connection.resume();
-        }
-        else {
-            delay_sql(cmd_options.requestBufferTime / 100, new_req_time, scheduler);
-        }
-    }
-
-	query.on('error', function(err) {
-	})
-	.on('fields', function(fields) {
-	})
-	.on('result', function(row) {
-		//Must be our first row.
-		if(base_request_time == 0)
-		{
-            base_request_time = row.utime * 1000;
-            prev_utime = row.utime;
-    	}
-
-        let sleep_time = (row.utime * 1000) - base_request_time;
-        sleep_time = sleep_time / cmd_options.playbackSpeed;
-        sleep_time = sleep_time - (Date.now() - ((base_local_time == 0) ? base_local_time = Date.now() : base_local_time));
-
-        //This line dispatches a request after a timeout determined by sleep_time for a given row/request.
-        // console.log(Date.now() + " delaying request " + row + "for " + sleep_time + " milliseconds.");
-
-        newest_request_time = Date.now() + sleep_time;
-        delay_request(sleep_time, row, dispatch_request, null);
-
-        if(newest_request_time > (Date.now() + cmd_options.requestBufferTime)) {
-        	// console.log("pausing scheduling");
-        	connection.pause();
-
-        	delay_sql(cmd_options.requestBufferTime / 100, newest_request_time, scheduler);
-        }
-	})
-	.on('end', function() {
-	});
-
-    //Close the connection.
-    connection.end();
 }
