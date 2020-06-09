@@ -1,6 +1,4 @@
 import React from "react";
-import { useHistory } from "react-router-dom";
-import BackNavButton from "./BackNavButton";
 
 function ErrorMsg(props) {
   return (
@@ -15,31 +13,31 @@ function ErrorMsg(props) {
 //Used to fill default placeholder values in forms.
 //Do we want regexs here or no?
 let placeholderValues = {
-  jobName: "Playback-Job",
+  jobname: "Playback-Job",
   jobStart: "MM-DD-YYYY",
   jobStop: "MM-DD-YYYY",
   secure: "Secure",
-  protocolName: "HTTP,HTTPS,",
-  hostName: "Hostname",
-  uriName: "/Uri",
-  method: "GET,PUT,POST,DELETE",
-  sourceip: "123.456.789.123"
+  protocol: "#HTTP\/.*\..*#",
+  host: "#.*\.host\.com#",
+  uri: "#/uri/.*#",
+  method: "#((GET)|(POST))#",
+  sourceip: "#.*\..*\..*\..*#"
 };
 
 //Used to make usernames more friendly.
 let nameMapper = {
-  jobName: "Job Name *required",
+  jobname: "Job Name *required",
   jobStart: "Start Date",
   jobStop: "End Date",
-  secure: "Secure",
-  protocolName: "Protocol",
-  hostName: "Hostname ",
-  uriName: "Uniform Resource Identifier",
-  methodName: "Method Name",
+  secure: "Security Setting",
+  protocol: "Networking Protocol",
+  host: "Hostname",
+  uri: "Uri",
+  method: "Method Type",
   sourceip: "Source Ip"
 };
 
-let regExpMapper = { secure: "[0]", insecure: "[1]", all: "[01]" };
+let regExpMapper = { secure: "#[0]#", insecure: "#[1]#", all: "#[01]#" };
 
 //If your file in anyway differs from this file, do not make any changes. Keep this file as is.
 //Or the project will not compile. You will need to fix the changes you make, if you do so. Thanks.
@@ -47,70 +45,97 @@ let regExpMapper = { secure: "[0]", insecure: "[1]", all: "[01]" };
 class CreateJob extends React.Component {
   constructor(props) {
     super(props);
+
+    let today = new Date();
+    let tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     this.state = {
-      jobName: "",
-      // active: 0,
-      jobStart: "",
-      jobStop: "",
-      secure: "",
-      protocolName: "",
-      hostName: "",
-      uriName: "",
-      methodName: "",
+      jobname: "",
+      active: 0,
+      secure: "all",
+      jobStart: this.formatDateString(today),
+      jobStop: this.formatDateString(tomorrow),
+      protocol: "",
+      host: "",
+      uri: "",
       sourceip: "",
+      method: "",
       statusCode: -1
       //-1 indicates no requests have been issued to the backend
       // 0 indicates a request has been issued and a response is being awaited.
       //200 indicates job creation is succesful
-      //400 indicates job creation is not succesful because of jobName conflicts.
+      //400 indicates job creation is not succesful because of jobname conflicts.
     };
   }
 
-  onChange(e) {
-    e.preventDefault();
-    let inputName = e.target.name;
-    let stateValue = e.target.value;
-    //if no invalid chars are detected
-    let invalidCharTest = /[^1234567890]/g.test(stateValue);
-    let stateNumberValue = Number(stateValue);
-    /*if (inputName === "active" && !invalidCharTest) {
-      switch (inputName) {
-        case "active":
-          this.setState({ active: stateNumberValue });
-          break;
-      }
-    }*/
+  formatDateString = date => {
+    const offset = date.getTimezoneOffset();
+    let dateString = new Date(date.getTime() + offset * 60 * 1000);
+    return dateString.toISOString().split("T")[0];
+  };
+
+  parseDate = s => {
+    var b = s.split(/\D/);
+    return new Date(b[0], --b[1], b[2]);
+  };
+
+  onChangeDateCheck = (inputName, stateValue) => {
+    let parsedStateValue = Date.parse(stateValue);
+    let parsedTodayValue = Date.parse(new Date());
 
     switch (inputName) {
-      case "jobName":
-        this.setState({ jobName: stateValue });
-        break;
       case "jobStart":
-        this.setState({ jobStart: stateValue });
+        if (
+          parsedStateValue < Date.parse(this.state.jobStop) &&
+          parsedStateValue >= parsedTodayValue
+        )
+          this.setState({ jobStart: stateValue });
         break;
       case "jobStop":
-        this.setState({ jobStop: stateValue });
+        if (
+          parsedStateValue > Date.parse(this.state.jobStart) &&
+          parsedStateValue > parsedTodayValue
+        )
+          this.setState({ jobStop: stateValue });
+        break;
+    }
+  };
+  onChange(e) {
+    let inputName = e.target.name;
+    let stateValue = e.target.value;
+    let checkboxValue = e.target.checked;
+
+    switch (inputName) {
+      case "jobname":
+        this.setState({ jobname: stateValue });
+        break;
+      case "jobStart":
+        this.onChangeDateCheck(inputName, stateValue);
+        break;
+      case "jobStop":
+        this.onChangeDateCheck(inputName, stateValue);
         break;
       case "secure":
         this.setState({ secure: stateValue });
         break;
-      case "protocolName":
-        this.setState({ protocolName: stateValue });
+      case "protocol":
+        this.setState({ protocol: stateValue });
         break;
-      case "hostName":
-        this.setState({ hostName: stateValue });
+      case "host":
+        this.setState({ host: stateValue });
         break;
-      case "uriName":
+      case "uri":
         this.setState({ uri: stateValue });
-        break;
-      case "methodName":
-        this.setState({ method: stateValue });
         break;
       case "sourceip":
         this.setState({ sourceip: stateValue });
         break;
       case "statusCode":
-        this.setState({ renderSetting: Number(stateValue) });
+        this.setState({ statusCode: Number(stateValue) });
+        break;
+      case "method":
+        this.setState({ method: stateValue });
         break;
     }
   }
@@ -118,7 +143,7 @@ class CreateJob extends React.Component {
   buildForm = () => {
     let form = null;
     // This function builds a dynamic form.
-    if (this.state.statusCode !== 200) {
+    if (this.state.statusCode === -1) {
       let keys = Object.keys(this.state);
 
       form = keys.map(key => {
@@ -142,25 +167,6 @@ class CreateJob extends React.Component {
               </select>
             </section>
           );
-        } else if (key === "methodName") {
-          return (
-            <section className="col-12 col-md-6">
-              <h6>{nameMapper[key]}</h6>
-              <select
-                name={key}
-                type="text"
-                value={this.state[key]}
-                onChange={e => this.onChange(e)}
-                placeholder={placeholderValues[key]}
-              >
-                <option>GET</option>
-                <option>PUT</option>
-                <option>POST</option>
-                <option>DELETE</option>
-                <option>ALL</option>
-              </select>
-            </section>
-          );
         } else if (key === "jobStart" || key === "jobStop") {
           return (
             <section className="col-12 col-md-6">
@@ -174,7 +180,7 @@ class CreateJob extends React.Component {
               />
             </section>
           );
-        } else if (key !== "renderSetting" && key !== "statusCode")
+        } else if (key !== "statusCode" && key !== "active")
           return (
             <section className="col-12 col-md-6">
               <h6>{nameMapper[key]}</h6>
@@ -188,34 +194,90 @@ class CreateJob extends React.Component {
             </section>
           );
       });
+    } else if (this.state.statusCode === 0) {
+      form = (
+        <section className="spinner-grow text-success" role="status">
+          {" "}
+          <span class="sr-only">Job is scheduling...</span>
+        </section>
+      );
+    } else if (this.state.statusCode === 200) {
+      let stateKeys = Object.keys(this.state);
+
+      form = (
+        <section>
+          <h2>Job Creation Succesful</h2>
+          <section className="container"></section>
+          {
+            <table className="table">
+              <thead>
+                <tr>
+                  <th scope="col">Job Property Name</th>
+                  <th scope="col"> Job Property Value</th>
+                </tr>
+                {stateKeys.map(key => {
+                  if (key !== "statusCode") {
+                    return (
+                      <tr>
+                        <td>{key}</td>
+                        <td>{this.state[key] || "empty field submitted"}</td>
+                      </tr>
+                    );
+                  } else return null;
+                })}
+              </thead>
+            </table>
+          }
+          <section className="container"></section>
+        </section>
+      );
+    } else if (this.state.statusCode === 404) {
+      form = (
+        <section className="container card">
+          <h3 className="card-header">Internal Server Error</h3>
+          <div className="card-body">
+            Internal Server Error encountered. Please try again later.
+          </div>
+        </section>
+      );
     }
     return form;
   };
 
-  buildSuccessMessage = () => {
-    return (
-      <section>
-        <h6> Job Deployment Success</h6>
-        <div>JobName: {this.state.jobName} succesfully created.</div>
-        LEFT OFF HERE
-      </section>
-    );
+  onClick = () => {
+    if (this.state.jobname !== "") {
+      this.setState({ statusCode: 0 });
+
+      fetch("/api/capture/captureJob", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: this.onClickStateFormat()
+      }).then(resp => {
+        if (resp.status === 200) {
+          this.setState({ statusCode: 200 });
+        } else if (resp.statusCode === 400) {
+          this.setState({ statusCode: 400 });
+        } else {
+          this.setState({ statusCode: 404 });
+        }
+      });
+    }
   };
 
-  onClick = () => {
-    this.setState({ renderSetting: "promise-dispatched" });
-    if (this.state.jobName !== "") {
-      if (this.state.hostName !== "") {
-        this.setState({ statusCode: 200 });
-        fetch("/api/createjob").then(resp => {
-          if (resp === 200) {
-            this.setState({ renderSetting: "promise-resolved-200" });
-          } else {
-            this.setState({ renderSetting: "promise-resolved-400" });
-          }
-        });
-      }
-    }
+  onClickStateFormat = () => {
+    let json = {
+      jobname: this.state.jobname,
+      active: 0,
+      jobStart: Date.parse(this.state.jobStart),
+      jobStop: Date.parse(this.state.jobStop),
+      secure: regExpMapper[this.state.secure],
+      protocol: this.state.protocol,
+      host: this.state.host,
+      uri: this.state.uri,
+      method: this.state.method,
+      sourceip: this.state.sourceip
+    };
+    return JSON.stringify(json);
   };
 
   buildButton = () => {
@@ -230,7 +292,7 @@ class CreateJob extends React.Component {
       </button>
     );
 
-    if (this.state.renderSetting === "promise-pending") {
+    if (this.state.statusCode === 0) {
       retButton = (
         <button class="btn btn-primary" type="button" disabled>
           <span
@@ -239,6 +301,44 @@ class CreateJob extends React.Component {
             aria-hidden="true"
           ></span>
           Creating Job...
+        </button>
+      );
+    } else if (this.state.statusCode === 200) {
+      retButton = (
+        <button
+          class="btn btn-primary"
+          type="button"
+          onClick={() => {
+            this.setState({
+              jobname: "",
+              // active: 0,
+              jobStart: "",
+              jobStop: "",
+              secure: "",
+              protocol: "",
+              host: "",
+              uri: "",
+              method: "",
+              sourceip: "",
+              statusCode: -1
+            });
+          }}
+        >
+          Create Another Job
+        </button>
+      );
+    } else if (this.state.statusCode === 400 || this.state.statusCode === 404) {
+      retButton = (
+        <button
+          class="btn btn-primary"
+          type="button"
+          onClick={() => {
+            this.setState({
+              statusCode: -1
+            });
+          }}
+        >
+          Retry
         </button>
       );
     }
@@ -256,16 +356,30 @@ class CreateJob extends React.Component {
         </h3>
         <section className="card-body container">
           {this.state.statusCode === 400 ? ( //if 400 is returned as the error code, render the error notification.
-            <ErrorMsg msg="The entered jobName must be unique." />
+            <ErrorMsg msg="The entered jobname must be unique." />
           ) : null}
 
-          {this.state.hostName === "" ? ( //if 400 is returned as the error code, render the error notification.
+          {this.state.jobname === "" && this.state.statusCode === -1 ? ( //if 400 is returned as the error code, render the error notification.
             <ErrorMsg
-              msg="The hostName is empty."
-              header="Warning"
-              className="bg-warning"
+              msg="The jobname is empty. This is a required field.Unable to dispatch request."
+              header="Error"
+              className="bg-danger"
             />
           ) : null}
+          <section class="card col-12 mx-0 px-0">
+            <div className="card-header bg-success">
+              Use Regex 101 to help build regex input values.
+              Regex needs to be formatted into PCRE(PHP) format.
+
+            </div>
+            <a
+              className="card-body"
+              target="_blank"
+              href="https://regex101.com/"
+            >
+              Link to regex101
+            </a>
+          </section>
           <section class="row">{this.buildForm()}</section>
           <br></br>
           <section className="row">{this.buildButton()}</section>

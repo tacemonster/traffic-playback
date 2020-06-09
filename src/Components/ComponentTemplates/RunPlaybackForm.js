@@ -16,10 +16,10 @@ class RunPlaybackForm extends React.Component {
       securePort: 443,
       requestBufferTime: 10000,
       hostname: "localhost",
-      backendServer: 1
+      backendServer: 1,
+      playbackName: props.playbackName
     };
     this.onChange = this.onChange.bind(this);
-    window.scrollTo(0, 0);
   }
 
   onChange(e) {
@@ -65,7 +65,7 @@ class RunPlaybackForm extends React.Component {
     let form = keys.map(key => {
       //Never give the user the ability to set jobId
       //return null in that case
-      if (key === "jobId") return null;
+      if (key === "jobID") return null;
 
       return (
         <section className="col-12 col-md-6">
@@ -82,35 +82,36 @@ class RunPlaybackForm extends React.Component {
     });
     return form;
   };
+
+  runJob = () => {
+    let payload = JSON.stringify(this.state);
+    fetch("/api/capture/captureJob", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload
+    }).then(resp => {
+      if (resp.status === 200) {
+        this.setState({ statusCode: 200 });
+      } else if (resp.statusCode === 400) {
+        this.setState({ statusCode: 400 });
+      } else {
+        this.setState({ statusCode: 404 });
+      }
+    });
+  };
+
   render() {
     let retVal = null;
-    let keyIndex = 0;
-    let httpButtons = this.props.HTTPButtons.map(button => {
-      keyIndex = keyIndex + 1;
-
-      return (
-        <HTTPServiceButton
-          callMeMaybe={this.props.callMeMaybe}
-          HTTPService={button.HTTPService}
-          APIEndPoint={button.APIEndPoint}
-          data={this.state}
-          key={keyIndex}
-          route={"/"}
-        >
-          Run Job
-        </HTTPServiceButton>
-      );
-    });
-
+    let buttons = <button onClick={this.runJob()}>Run Job</button>;
     retVal = (
       <div className="card ">
         <h5 className="card-header bg-success text-light">
-          {"Configuration Settings for jobName: " + this.props.jobName}
+          {"Configuration Settings for jobName: " + this.props.playbackName}
         </h5>
         <section className="card-body container">
           <section className="row">{this.buildForm()}</section>
           <section className="row align-items-center">
-            {httpButtons}
+            {buttons}
             <input
               type="button"
               className={TemplateStyles.BackNavButton}

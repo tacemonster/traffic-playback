@@ -1,21 +1,18 @@
 import "./PlaybackStyles.css";
 import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-
 import Body from "../Body/BodyModule";
 import Navbar from "../Nav/Navbar";
 import HTTPClientEndPoint from "../ComponentTemplates/HTTPServices/HTTPClientEndPoint";
 import HTTPClientFunctions from "../ComponentTemplates/HTTPServices/HTTPClientFunctions";
 import RunJobs from "../ComponentTemplates/RunJobs";
 import Routes from "./Routes";
-import ConfigureJob from "../ConfigureJob/configureJob";
-import { func } from "prop-types";
 import TrafficStatistic from "../StatisticSite/TrafficStatistic";
 import RealTimeMonitor from "../StatisticSite/RealTime";
 import CreateJob from "../ComponentTemplates/CreateJob";
-
 import PlaybackJobs from "./newPlayback.js";
 import CaptureJobs from "../CaptureJob/newCaptureJob.js";
+import ProjectLogo from "./ProjectLogo.png";
 
 class PlayBack extends React.Component {
   constructor(props) {
@@ -65,14 +62,46 @@ class PlayBack extends React.Component {
         <Body>
           <Switch>
             <Route exact path="/">
+              <h3 className="card-header bg-success">Traffic Playback</h3>
+
               <div className="card">
-                <h4 className="card-header bg-success">Traffic Playback</h4>
+                <h4 className="card-header">Asynchronous Server Blaster</h4>
+                <div className="card-body container row">
+                  <div className="col-12 col-md-6">
+                    {" "}
+                    <h4>Developed By Portland State's Capstone Team A</h4>
+                    <ul>
+                      <li>Medina Lamkin</li>
+                      <li>Jordan Green</li>
+                      <li>Zack Davis</li>
+                      <li> Berin H.</li>
+                      <li>James Vo</li>
+                      <li>Tacy Bechtel</li>
+                      <li>Huanxiang Su</li>
+                      <li>Christopher Douglas </li>
+                    </ul>
+                  </div>
+
+                  <img className="col-12 col-md-6" src={ProjectLogo} />
+                </div>
+              </div>
+
+              <div className="card">
+                <h3 className="card-header">The Mission of Playback</h3>
                 <div className="card-body">
-                  This app supports traffic capture and playback. Capturing
-                  traffic involves recording HTTP, HTTPS, or both traffic into
-                  database for a specific Uri. Playback involves replaying that
-                  traffic to that uri in order to stress test hardware, code,
-                  and to discover faults and bugs in the system.
+                  The Async. Server Blaster is a terrific tool for stress
+                  testing code and hardware through replaying recorded traffic
+                  captures. This application can support capturing traffic on
+                  all user owned hostnames. Further, users can capture all
+                  traffic to all URIs on a particular host or users can capture
+                  a specific set of uris of a particular host. It's easy to play
+                  this traffic back using our GUI or CLI. With a click of a few
+                  buttons or the execution of a few commandline arguements,
+                  playback occurrs. Our application is especially useful in
+                  cases where the webserver is on the cloud and hardware
+                  installations of traffic analysis tools is not possible. We
+                  hope it can serve and add value you to your organization.
+                  Enjoy!
                 </div>
               </div>
             </Route>
@@ -90,9 +119,17 @@ class PlayBack extends React.Component {
             </Route>
             <Route exact path="/stats" component={TrafficStatistic}></Route>
             <Route exact path="/realtime" component={RealTimeMonitor}></Route>
-
             <Route exact path="/playback" component={PlaybackJobs} />
             <Route exact path="/capture" component={CaptureJobs} />
+            <Route>
+              <div className="card">
+                <h1 className="card-header bg-warning"> 404</h1>
+                <div className="card-body">
+                  The requested url does not exist on the App. Use the navbar to
+                  safely navigate through the app.
+                </div>
+              </div>
+            </Route>
           </Switch>
         </Body>
       </Router>
