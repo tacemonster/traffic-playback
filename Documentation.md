@@ -427,7 +427,7 @@ To stop the server press \*control c\*\* together.
 
 That's it! You have completed setting up the express node server backend.
 
-UI Setup
+### UI Setup
 
 ### Dependencies
 
