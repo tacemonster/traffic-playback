@@ -12,6 +12,7 @@
     "console.table": "^0.10.0",
     "joi": "^14.3.1",
     "joi-browser": "^13.4.0",
+    "jquery": "^3.5.1",
     "mariadb": "^2.3.1",
     "mssql": "^6.2.0",
     "mysql": "^2.18.1",
@@ -24,11 +25,10 @@
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
-    "sorted-array-functions": "^1.2.0",
-    "sync-mysql": "^3.0.1",
-    "yargs": "^13.3.2",
     "reactstrap": "^8.4.1",
-    "sorted-array-functions": "1.2.0"
+    "sorted-array-functions": "1.2.0",
+    "sync-mysql": "^3.0.1",
+    "yargs": "^13.3.2"
   },
   "scripts": {
     "start": "react-scripts start",
