@@ -2,7 +2,7 @@ import React from 'react';
 import { Dropdown, Table, Form, Button, Spinner, Row, Col, Alert } from 'react-bootstrap';
 import style from './TrafficStatistic.module.css';
 import { Line } from 'react-chartjs-2';
-import Routes from '../Playback/Routes';
+import StatsticsHelper from './StatisticsHelper';
 
 class TrafficStatistic extends React.Component {
     constructor(props) {
@@ -10,39 +10,106 @@ class TrafficStatistic extends React.Component {
         this.state = {
             data: null, 
             error: false,
+            loading: false,
+            jobList: [],
+            currentJob: '',
         };
     }
 
+    // call API to fetch job list after component finished first time mounting.
     componentDidMount = () => {
-        let url = Routes.getAllRaw;
-        // let url = 'http://ec2-54-152-230-158.compute-1.amazonaws.com:8000/api/play';
-        fetch(url)
-            .then((res) => {
-                if (res.json) {
-                    return res.json().then((json) => {
-                        return res.ok ? json : Promise.reject(json);
-                    });
-                } else {
-                    Promise.reject('No JSON exist!');
-                }
-            })
-            .then((result) => {
-                console.log(result);
-                this.setState({ data: result, error: false });
+        this.getJobList();
+    }
+
+    // make backend api call to get all raw data.
+    getData = (jobID) => {
+        this.setState({ loading: true, data: null });
+        StatsticsHelper.getAllUriByJobID(jobID)
+            .then(result => {
+                this.setState({ data: result, error: false, loading: false, currentJob: jobID });
             })
             .catch((err) => {
-                console.log(err);
-                this.setState({ error: true });
+                this.setState({ data: null, error: true, loading: false, currentJob: jobID });
             });
+    }
+
+    // make backend api call to get all jobs.
+    getJobList = () => {
+        StatsticsHelper.getAllJobID()
+            .then((result) => {
+                this.handleJobList(result); 
+            })
+            .catch((err) => {
+                this.setState({ error: true });
+                this.handleJobListError();
+            });
+    }
+
+    // render all jobs with job ID and job name to the select job dropdown.
+    handleJobList = (res) => {
+        if (res.length >= 1) {
+            const list = [];
+            res.forEach(job => {
+                list.push(<option key={job.jobID} value={job.jobID}>{`${job.jobID} - ${job.jobName}`}</option>);
+            });
+            this.setState({ jobList: list });
+        } else {
+            this.handleJobListError();
+        }
+        this.setState({ error: false });
+    }
+
+    // render 'empty list' option to the select dropdown when server not connected or no jobs available in our database
+    handleJobListError = () => {
+        let empty = [];
+        empty.push(<option key={'jobListError'} value='-2' disabled>------- No Jobs Available -------</option>)
+        this.setState({ jobList: empty });
+    }
+
+    // make new backend call to fetch data relative to the new selected job ID.
+    handleUpdateJob = (e) => {
+        let value = parseInt(e.target.options[e.target.selectedIndex].value);
+        if (value > -1) {
+            this.getData(value);
+        }
     }
     
     render() {
         return (
             <div>
-                <h1 className={style.title}>My Traffic Statistics</h1>
+                <h2 className={style.title}>Traffic Statistics</h2>
+                <div className={style.jobListBlock}>
+                    <label
+                        htmlFor="jobIDList"
+                        className={style.optionLabel}
+                        title="select a job name to view summary and view analysis chart"
+                    >
+                        Select a Job Name to view stats:
+                        {this.state.loading && (
+                            <Spinner
+                                as="span"
+                                variant="primary"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                            />
+                        )}
+                    </label>
+                    <Form.Control
+                        as="select"
+                        id="jobIDList"
+                        onChange={this.handleUpdateJob}
+                        disabled={this.state.loading}
+                        defaultValue="-1"
+                    >
+                        <option value="-1" disabled>Select a job name ...</option>
+                        {this.state.jobList}
+                    </Form.Control>
+                </div>
                 <hr></hr>
                 <StatsTable data={this.state.data} error={this.state.error} />
-                <StatsChart data={this.state.data} />
+                <StatsChart data={this.state.data} job={this.state.currentJob} />
             </div>
         );
     }
@@ -61,9 +128,12 @@ class StatsTable extends React.Component {
         if (nextProps.data) {
             let content = [];
             let result = getSummarizedData(nextProps.data);
+            let totalRequests = 0;
             result.forEach(res => {
+                totalRequests += res.total;
                 content.push(this.handleRow(res.uri, res.total));
             });
+            content.unshift(this.handleRow('------- All URIs -------', totalRequests));
             this.setState({ content: content });
         }
     }
@@ -79,27 +149,24 @@ class StatsTable extends React.Component {
 
     render() {
         return (
-            <div>
-                <h2 className={style.title}>Traffic Summary</h2>
+            <div className={style.myContainer}>
+                <h3 className={style.title}>Traffic Summary</h3>
                 <div className={style.tableContainer}>
                     {!this.props.error
                         ?
                         <Table striped bordered hover size="sm" variant="dark" className={style.myTable}>
                             <thead>
                                 <tr>
-                                    <th >URI</th>
+                                    <th>URI</th>
                                     <th style={{textAlign: 'center'}} >Total Requests</th>
                                 </tr>
                             </thead>
                             <tbody>{this.state.content}</tbody>
                         </Table>
                         :
-                        <Alert
-                            variant="danger"
-                            className={style.alertBox}
-                        >
-                            <Alert.Heading>Error</Alert.Heading>
-                            <p>Server Not Connected!</p>
+                        <Alert variant="danger" className={style.alertBox}>
+                            <Alert.Heading>Connection Error</Alert.Heading>
+                            <p>Server Not Connected.</p>
                         </Alert>
                     }
                     
@@ -110,87 +177,83 @@ class StatsTable extends React.Component {
 }
 
 
-const lineColors = [
-    'rgb(237, 41, 58)',
-    'rgb(75,192,192)',
-    'rgb(230,54,192)',
-    'rgb(100, 53, 201)',
-    'rgb(33, 133, 208)',
-];
-
-const options = {
-    responsive: true,
-    scales: {
-        xAxes: [{
-            display: true,
-            scaleLabel: {
-                display: true,
-                labelString: 'Dates'
-            },
-        }],
-        yAxes: [{
-            display: true,
-            scaleLabel: {
-                display: true,
-                labelString: '# of Requests'
-            }
-        }]
-    }
-};
-
 class StatsChart extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             lineData: {},
         };
+        this.options = {
+            responsive: true,
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Dates'
+                    },
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: '# of Requests'
+                    }
+                }]
+            }
+        };
     }
 
     // handle new request and update the line chart, result param received from StatsChartOptionsBar.
     handleUpdate = (result) => {
         if (!result) return null;
-        let i = 0;
         // update data to the line chart
         let lineData = {};
         lineData.datasets = [];
         lineData.labels = result.labels;
-        result.data.forEach((uri) => {
+        result.data.forEach((uri, i) => {
+            let color = StatsticsHelper.getRandomColor();
             lineData.datasets.push({
-                label: `uri(${uri.name})`,
+                label: `${uri.name}`,
                 data: uri.traffic,
                 fill: false,
                 lineTension: 0.1,
-                backgroundColor: lineColors[i],
-                borderColor: lineColors[i],
+                backgroundColor: color,
+                borderColor: color,
                 borderCapStyle: 'butt',
                 borderDash: [],
                 borderDashOffset: 0.0,
                 borderJoinStyle: 'miter',
-                pointBorderColor: lineColors[i],
+                pointBorderColor: color,
                 pointBackgroundColor: '#fff',
                 pointBorderWidth: 1,
                 pointHoverRadius: 5,
-                pointHoverBackgroundColor: lineColors[i],
+                pointHoverBackgroundColor: color,
                 pointHoverBorderColor: 'rgba(220,220,220,1)',
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,
                 pointHitRadius: 10,
             });
-            ++i;
         });
         this.setState({ lineData: lineData });
     };
 
+    handleReset = () => {
+        this.setState({ lineData: {} });
+    }
+
     render() {
         return (
             <div className={style.chartContainer}>
-                <h2 className={style.title}>Traffic Analysis Chart</h2>
+                <h3 className={style.title}>Traffic Analysis Chart</h3>
                 <StatsChartOptionsBar
                     data={this.props.data}
                     lineHandler={this.handleUpdate}
+                    lineResetHandler={this.handleReset}
+                    job={this.props.job}
                 />
                 <hr></hr>
-                <Line data={this.state.lineData} options={options} />
+                <Line data={this.state.lineData} options={this.options} />
             </div>
         );
     }
@@ -201,64 +264,110 @@ class StatsChartOptionsBar extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            uriList: ['/home', '/home/uri', '/traffic/abc/dsassfcsaaaaaaaaa', '/hello', '/hi', '/abc'],
-            uriListVisible: [true, true, true, true, true, true],
+            uriList: [],
+            uriListVisible: [],
+            uriChecked: [],
             applyLoading: false,
             error: false,
+            errorTitle: 'Error',
             errorText: 'Something wrong!',
+            validUriSelect: true,
+            validStartDate: true,
+            validEndDate: true,
+            startDate: '',
+            endDate: '',
         };
-        this.maxSelectedUri = 5;
+        this.job = '';
         this.selectedUri = [];
         this.startDate = '';
         this.endDate = '';
-        this.receivedData = false;
+    }
+
+    // set states to default value
+    handleDefault = () => {
+        let date = new Date();
+        this.endDate = `${date.getFullYear().toString()}-${('0' + (date.getMonth() + 1).toString()).slice(-2)}-${('0' + (date.getDate()).toString()).slice(-2)}`;
+        date.setDate(date.getDate() - 13);
+        this.startDate = `${date.getFullYear().toString()}-${('0' + (date.getMonth() + 1).toString()).slice(-2)}-${('0' + (date.getDate()).toString()).slice(-2)}`;
+        this.handleCheckBoxUncheckAll();
+        this.setState({
+            startDate: this.startDate,
+            endDate: this.endDate,
+            validUriSelect: true,
+            validStartDate: true,
+            validEndDate: true,
+            error: false,
+        });
+    }
+
+    componentWillMount = () => {
+        this.handleDefault();
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.receivedData === false) {
+        // only update chart and option bar when user selected a new job ID
+        if (nextProps.job !== this.job) {
             if (nextProps.data) {
-                let uriList = getUriList(nextProps.data);
+                this.handleDefault();  // update default form data when switched to new job ID
+                this.job = nextProps.job;
+                let uriList = getUriList(nextProps.data).sort();
                 let num = uriList.length;
                 let visible = [];
-                for (let i = 0; i < num; ++i) visible.push(true);
+                let checked = [];
+                for (let i = 0; i < num; ++i) {
+                    visible.push(true);
+                    checked.push(false);
+                }
+                if (num > 0) {
+                    this.selectedUri.push(uriList[0]);
+                    checked[0] = true;
+                    this.handleApply(); // apply default chart, for the last 14 days
+                } else {
+                    this.props.lineResetHandler(); // reset chart 
+                }
                 this.setState({
-                    uriList: uriList.sort(),
+                    uriList: uriList,
                     uriListVisible: visible,
+                    uriChecked: checked,
                 });
-                this.receivedData = true;
             }
         }
     }
 
     // record checked checkbox value.
     handleCheckBox = (event) => {
-        if (event.target.id) {
-            let id = event.target.id;
-            let uripart = id.split('::');
-            let uri = uripart[1];
-            if (uri && uri !== '') {
-                if (event.target.checked === true) {
-                    // allow maximum of 5 uris selected.
-                    if (this.selectedUri.length >= this.maxSelectedUri) {
-                        event.target.checked = false;
-                        this.setState({
-                            error: true,
-                            errorText: 'Only maximum of 5 URIs allowed',
-                        });
-                    } else {
-                        this.selectedUri.push(uri);
-                    }
-                } else {
-                    let index = this.selectedUri.indexOf(uri);
-                    if (index > -1) {
-                        this.selectedUri.splice(index, 1);
-                    }
+        let id = event.target.attributes.getNamedItem('data-id');
+        let uri = event.target.attributes.getNamedItem('data-uri');
+        if (uri && id) {
+            id = parseInt(id.value);
+            uri = uri.value;
+            let checked = this.state.uriChecked;
+            if (event.target.checked === true) {
+                this.selectedUri.push(uri);
+                checked[id] = true;
+                this.setState({ validUriSelect: true, uriChecked: checked });
+            } else {
+                let index = this.selectedUri.indexOf(uri);
+                if (index > -1) {
+                    this.selectedUri.splice(index, 1);
                 }
+                checked[id] = false;
+                this.setState({ uriChecked: checked });
             }
         }
     };
 
-    // handle uri filter in the uri dropdown.
+    // uncheck all checkboxes
+    handleCheckBoxUncheckAll = () => {
+        let checked = this.state.uriChecked;
+        checked.forEach((check, i) => {
+            checked[i] = false;
+        });
+        this.selectedUri = [];
+        this.setState({ uriChecked: checked });
+    }
+
+    // handle uri filtering in the uri dropdown.
     handleFilter = (event) => {
         let value = event.target.value.toLowerCase();
         let visible = this.state.uriListVisible;
@@ -272,31 +381,57 @@ class StatsChartOptionsBar extends React.Component {
         this.setState({ uriListVisible: visible });
     };
 
-    // set date onchange
+    // record date when onchange
     setDate = (e) => {
         if (e.target.id === 'start-date') {
             this.startDate = e.target.value;
+            this.setState({ validStartDate: true, startDate: this.startDate });
         } else {
             this.endDate = e.target.value;
+            this.setState({ validEndDate: true, endDate: this.endDate });
         }
     };
+
+    // check if any input field missing, set state to false if missing
+    checkRequireFields = () => {
+        if (this.startDate === '') {
+            this.setState({ validStartDate: false });
+        }
+        if (this.endDate === '') {
+            this.setState({ validEndDate: false });
+        }
+        if (this.selectedUri.length === 0) {
+            this.setState({ validUriSelect: false });
+        }
+    }
 
     // apply and process custom filters and send result to the line chart.
     handleApply = () => {
         console.log(this.selectedUri);
         console.log(this.startDate);
         console.log(this.endDate);
+        if (this.job === '') {
+            this.setState({
+                error: true,
+                errorTitle: 'No job selected!',
+                errorText: (<span>Please select a job from the <span onClick={this.goToTop} className={style.toTopText}>top of the page</span> to view analysis chart.</span>),
+            });
+            return null;
+        }
         if (this.endDate === '' || this.startDate === '' || this.selectedUri.length === 0) {
             this.setState({
                 error: true,
-                errorText: 'Some information is empty.'
+                errorTitle: 'Missing Information!',
+                errorText: 'Please fill in all required input fields.',
             });
+            this.checkRequireFields();
             return null;
         }
         if (this.endDate < this.startDate) {
             this.setState({
                 error: true,
-                errorText: 'Error! End date is greater than start date!',
+                errorTitle: 'Invalid date range!',
+                errorText: 'The end date cannot be greater than the start date.',
             });
             return null;
         }
@@ -309,12 +444,17 @@ class StatsChartOptionsBar extends React.Component {
             } else {
                 this.setState({
                     error: true,
-                    errorText: 'Internal Error! Database Not Connected!',
+                    errorTitle: 'Connection Error!',
+                    errorText: 'Server not connected!',
                 });
             }
             this.setState({ applyLoading: false });
         }, 600);
     };
+
+    goToTop = () => {
+        window.scrollTo(0, 0);
+    }
 
     handleAlert = () => {
         this.setState({ error: false });
@@ -330,10 +470,13 @@ class StatsChartOptionsBar extends React.Component {
                     key={uri}
                 >
                     <Form.Check
+                        id={`chartUri=${i}`}
                         onChange={this.handleCheckBox}
+                        checked={this.state.uriChecked[i]}
                         type={'checkbox'}
-                        id={`uri::${uri}`}
-                        label={`${uri}`}
+                        data-id={i}
+                        data-uri={uri}
+                        label={uri}
                         className={style.checkBox}
                     />
                 </div>
@@ -347,43 +490,48 @@ class StatsChartOptionsBar extends React.Component {
                             htmlFor="start-date"
                             className={style.optionLabel}
                         >
-                            Start Date:
+                            <span className={style.requiredSign}>*</span> Start Date:
                         </label>
                         <Form.Control
                             type="date"
                             id="start-date"
+                            value={this.state.startDate}
+                            isInvalid={!this.state.validStartDate}
                             className={style.dateInput}
                             onChange={this.setDate}
-                            disabled={this.state.applyLoading ? true : false}
+                            disabled={this.state.applyLoading}
                         />
                     </Col>
                     <Col sm={12} md={6} lg={3}>
                         <label htmlFor="end-date" className={style.optionLabel}>
-                            End Date:
+                            <span className={style.requiredSign}>*</span> End Date:
                         </label>
                         <Form.Control
                             type="date"
                             id="end-date"
+                            value={this.state.endDate}
+                            isInvalid={!this.state.validEndDate}
                             className={style.dateInput}
                             onChange={this.setDate}
-                            disabled={this.state.applyLoading ? true : false}
+                            disabled={this.state.applyLoading}
                         />
                     </Col>
                     <Col xs={12} sm={6} lg={3}>
                         <label
                             htmlFor="stat-dropdown"
                             className={style.optionLabel}
+                            title={'select uris to apply to the chart'}
                         >
-                            Select Uri:
+                            <span className={style.requiredSign}>*</span> Select URIs:
                         </label>
                         <Dropdown>
                             <Dropdown.Toggle
-                                variant="outline-info"
+                                variant={this.state.validUriSelect ? 'outline-primary' : 'outline-danger'}
                                 id="stat-dropdown"
-                                disabled={this.state.applyLoading ? true : false}
+                                disabled={this.state.applyLoading}
                                 className={style.dropdownBtn}
                             >
-                                Select URI
+                                Select URIs
                             </Dropdown.Toggle>
                             <Dropdown.Menu className={style.dropdownMenu}>
                                 <div className={style.item}>
@@ -403,11 +551,11 @@ class StatsChartOptionsBar extends React.Component {
                             Apply Change:
                         </label>
                         <Button
-                            variant="info"
+                            variant="primary"
                             id="apply"
                             className={style.applyBtn}
                             onClick={this.handleApply}
-                            disabled={this.state.applyLoading ? true : false}
+                            disabled={this.state.applyLoading}
                         >
                             {this.state.applyLoading ? (
                                 <Spinner animation="grow" size="sm" />
@@ -425,7 +573,7 @@ class StatsChartOptionsBar extends React.Component {
                         dismissible
                         className={style.alertBox}
                     >
-                        <Alert.Heading>Error</Alert.Heading>
+                        <Alert.Heading>{this.state.errorTitle}</Alert.Heading>
                         <p>{this.state.errorText}</p>
                     </Alert>
                 )}
@@ -437,7 +585,7 @@ class StatsChartOptionsBar extends React.Component {
 // get a list of different uris from data that fetched from the database.
 function getUriList(data) {
     let uriList = [];
-    if (data) {
+    if (data && data.length > 0) {
         data.forEach((row) => {
             let uri = row.uri;
             // uriList acts as set.
@@ -451,8 +599,8 @@ function getUriList(data) {
 
 // summarize all uris with the total number of requests received so far.
 function getSummarizedData(data) {
-    let resultArray = null;
-    if (data) {
+    let resultArray = [];
+    if (data && data.length > 0) {
         let result = {};
         data.forEach(row => {
             let uri = row.uri;
@@ -462,7 +610,6 @@ function getSummarizedData(data) {
                 result[uri] = 1;
             }
         });
-        resultArray = [];
         Object.keys(result).forEach(uri => {
             resultArray.push({
                 uri: uri,
@@ -476,21 +623,20 @@ function getSummarizedData(data) {
                 return -1;
             return 0;
         });
-        return resultArray;
     }
-    return null; 
+    return resultArray;
 }
 
 // get total request number on each day for each requested uri from the given time range.
 function getDataFromTimeRange(start, end, requestedUri, data) {
-    if (!data) {
+    if (!data || data.length === 0) {
         return null;
     }
-    let startDateStr = start.toString().split('-').join('.');
-    let startDate = new Date(startDateStr);
+    let startStrs = start.toString().split('-');
+    let startDate = new Date(parseInt(startStrs[0]), parseInt(startStrs[1]) - 1, parseInt(startStrs[2]));
     let unixStart = startDate.getTime();
-    let endDateStr = end.toString().split('-').join('.');
-    let endDate = new Date(endDateStr);
+    let endStrs = end.toString().split('-');
+    let endDate = new Date(parseInt(endStrs[0]), parseInt(endStrs[1]) - 1, parseInt(endStrs[2]));
     endDate.setDate(endDate.getDate() + 1);
     let unixEnd = endDate.getTime();
     let numDays = 0;
@@ -500,7 +646,7 @@ function getDataFromTimeRange(start, end, requestedUri, data) {
     result.labels = [];
     result.unixTimeLabels = [];
 
-    let current = new Date(startDateStr);
+    let current = new Date(parseInt(startStrs[0]), parseInt(startStrs[1]) - 1, parseInt(startStrs[2]));
     while (current <= endDate) {
         ++numDays;
         let label = `${current.getMonth() + 1}-${current.getDate()}`;
@@ -538,7 +684,6 @@ function getDataFromTimeRange(start, end, requestedUri, data) {
             let next = unixTimeRange[j + 1];
             // console.log(`${current} ${unixTime} ${next}`);
             if (unixTime >= current && unixTime < next) {
-                // console.log('match time');
                 for (let k = 0; k < requestedUri.length; ++k) {
                     if (uri === requestedUri[k]) {
                         result.data[k].traffic[j] += 1;
