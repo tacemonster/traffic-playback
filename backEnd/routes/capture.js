@@ -32,8 +32,8 @@ function updateStatus(job) {
  * Output: status code 200 on success and 400 code on failure.
  */
 router.post("/createJob", (req, res) => {
-    const { error } = validateCreateJob(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+//    const { error } = validateCreateJob(req.body);
+ //   if (error) return res.status(400).send(error.details[0].message);
 
   mySqlConnect.query(
     "INSERT INTO trafficDB.jobs (jobName, active, jobStart, jobStop, secure, protocol, host, uri, method, sourceip)  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ",
