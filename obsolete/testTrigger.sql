@@ -1,4 +1,4 @@
-
+DROP TRIGGER parse_raw_data; 
 DELIMITER $$
 CREATE TRIGGER parse_raw_data AFTER INSERT ON raw FOR EACH ROW  
 BEGIN 

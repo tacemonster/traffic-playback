@@ -1,0 +1,35 @@
+server {
+	#Reverse proxy is going to listen to port 80 to handle http requests from clients.
+        listen		80;
+
+	#Setup nginx as a reverse proxy to the website to be logged.
+        location / {
+		#Activate the nginx mirror plugin and send it to a unique uri.
+                mirror /tpt-mirror;
+
+		#Fixup the host header to mimic the client and provide the backend webserver with the client IP address.
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+
+		#Send proxy traffic to the backend webserver
+                proxy_pass http://127.0.0.1:8080/;
+        }
+
+	#Location specified in the mirror directive.
+        location /tpt-mirror {
+		#Force this location to only respond to internal requests, being unavailable to access from cients.
+                internal;
+
+		#Send needed variables from the request to the logging script via headers.
+                proxy_set_header tpt-ip $remote_addr;
+                proxy_set_header tpt-secure $https;
+                proxy_set_header tpt-proto $server_protocol;
+                proxy_set_header tpt-host $host;
+                proxy_set_header tpt-uri $request_uri;
+                proxy_set_header tpt-method $request_method;
+                proxy_set_header tpt-requesttime $msec;
+		
+		#Send mirrored to request to the capture script.
+                proxy_pass http://127.0.0.1:8080/traffic_capture.php;
+        }
+}
