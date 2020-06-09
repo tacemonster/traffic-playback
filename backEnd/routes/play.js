@@ -125,13 +125,10 @@ router.post("/realtime", (req, res) => {
 
 /*Name: stats
  * Description: Statistics for UI
- * Input: Job  Limit
+ * Input: None
  * Output: Json object
  */
 router.post("/stats", (req, res) => {
-  const { error } = validateJobLimit(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
- 
   let id = 0;
   let args = [];
   if (req.body.jobID) {
