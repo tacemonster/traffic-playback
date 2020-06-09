@@ -91,47 +91,47 @@ const args = require('yargs')
             desc: 'specifies the name of the job',
             type: 'string'
         });
-        yargs.options('job-start', {
-            desc: 'when the job will start',
-            type: 'number'
-        });
         yargs.options('active', {
             alias: 'a',
             desc: 'This determines whether the capture job is currently running',
             type: 'boolean'
         });
+        yargs.options('job-start', {
+            desc: 'when the job will start - in UNIX epoch time',
+            type: 'number'
+        });
         yargs.options('job-stop', {
-            desc: 'when the job will stop',
+            desc: 'when the job will stop - in UNIX epoch time',
             type: 'number'
         });
         yargs.options('secure', {
             alias: 's',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #[0]# to only capture http, #[1]# to only capture https and #[01]# to capture both.',
             type: 'string'
         });
         yargs.options('protocol', {
             alias: 'p',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #HTTP\/.*\..*#',
             type: 'string'
         });
         yargs.options('hostname', {
             alias: 'host',
-            desc: 'specifies which domain to capture requests from',
+            desc: 'PCRE(PHP) formatted regex string. EX: #.*\.host\.com#',
             type: 'string'
         });
         yargs.options('uri', {
             alias: 'p',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #\/uri\/.*#',
             type: 'string'
         });
         yargs.options('method', {
             alias: 'p',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #((GET)|(POST))#',
             type: 'string'
         });
         yargs.options('source-ip', {
             alias: 'p',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #.*\..*\..*\..*#',
             type: 'string'
         });
         return yargs;
@@ -167,32 +167,32 @@ const args = require('yargs')
         });
         yargs.options('secure', {
             alias: 's',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #[0]# to only capture http, #[1]# to only capture https and #[01]# to capture both.',
             type: 'string'
         });
         yargs.options('protocol', {
             alias: 'p',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #HTTP\/.*\..*#',
             type: 'string'
         });
         yargs.options('hostname', {
             alias: 'host',
-            desc: 'specifies which domain to capture requests from',
+            desc: 'PCRE(PHP) formatted regex string. EX: #.*\.host\.com#',
             type: 'string'
         });
         yargs.options('uri', {
             alias: 'u',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #\/uri\/.*#',
             type: 'string'
         });
         yargs.options('method', {
             alias: 'm',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #((GET)|(POST))#',
             type: 'string'
         });
         yargs.options('source-ip', {
             alias: 'si',
-            desc: 'TODO',
+            desc: 'PCRE(PHP) formatted regex string. EX: #.*\..*\..*\..*#',
             type: 'string'
         });
         return yargs;
@@ -228,25 +228,20 @@ const args = require('yargs')
             desc: 'specifies the size in milliseconds of the rolling request schedule window',
             type: 'number'
         });
-        yargs.options('hostname', {
-            alias: 'host',
+        yargs.options('target', {
+            alias: 't',
             desc: 'specifies where to send requests to',
             type: 'string'
         });
         yargs.options('skip-ssl-validity-check', {
             alias: ['skip-ssl', 'ssvc'],
-            desc: 'specifies whether or not to skip the ssl validity check',
+            desc: 'specifies whether or not to skip the ssl validity check - defaults to true',
             boolean: true
         });
         yargs.options('force-host-header', {
             alias: ['force-host', 'fh'],
-            desc: 'forces the request header\'s Host value to be set to the value specified by hostname',
+            desc: 'forces the request header\'s Host value to be set to the value specified by target - defaults to false',
             boolean: true
-        });
-        yargs.options('backend-server', {
-            alias: 'b',
-            desc: 'specifies which server will run the playback job',
-            type: 'string'
         });
         yargs.options('config-file', {
             alias: 'c',
@@ -487,7 +482,7 @@ if(args._.includes('playback')) {
     let default_options = {
         verbose: 0,
         playbackSpeed: 1,
-        hostname: 'localhost',
+        target: 'localhost',
         port: 80,
         securePort: 443,
         requestBufferTime: 10000,
@@ -559,7 +554,7 @@ if(args._.includes('playback')) {
             req_headers[header_array[i]] = header_array[i + 1];
         }
 
-        let req_options = {"hostname":cmd_options.hostname, "setHost":false, "path":options.uri, "headers":req_headers, "method":options.method, "port":8080};
+        let req_options = {"hostname":cmd_options.target, "setHost":false, "path":options.uri, "headers":req_headers, "method":options.method, "port":8080};
         let editable_options = {
             'secure': options.secure,
             'reqbody': options.reqbody,
@@ -574,7 +569,7 @@ if(args._.includes('playback')) {
         percent = Number.isNaN(percent) ? 100 : percent;
         prev_utime = options.utime;
 
-        progress_bar.increment(1, { aeta: eta, percent: percent });
+        progress_bar.increment(1, { aeta: eta, percent: (percent < 0 ? 0 : percent) });
         if(progress_bar.value >= count) {
             progress_bar.increment(0, { aeta: 0, percent: 100 })
             progress_bar.stop();
@@ -587,7 +582,7 @@ if(args._.includes('playback')) {
 
             // Overrides the 'Host' key in the request headers if the user has specified this option
             if(cmd_options.forceHostHeader) {
-                req_options.headers.Host = cmd_options.hostname;
+                req_options.headers.Host = cmd_options.target;
             }
 
             let req;
