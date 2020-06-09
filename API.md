@@ -187,7 +187,7 @@ api/play/stats
 
 ### Input:
 
-• limit (Number) : Total request limit.
+None
 
 ### Output:
 
