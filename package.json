@@ -9,7 +9,6 @@
     "bootstrap": "^4.4.1",
     "chart.js": "^2.9.3",
     "cli-progress": "^3.8.2",
-    "console.table": "^0.10.0",
     "joi": "^14.3.1",
     "joi-browser": "^13.4.0",
     "mariadb": "^2.3.1",
