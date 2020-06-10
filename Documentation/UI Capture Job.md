@@ -61,27 +61,37 @@ Adjust the speed at which to playback the captured traffic to see how your site 
 
 
 ## Backend Server
-        
+    
 
 
 
 # UI Statistics Screen
 
-This page will show you a graph of traffic captured for a chosen URI. Select your URI. Choose the start date and end date for the time frame you want to view traffic to your URI. 
+This page will show you a graph of traffic captured for a chosen URI. Modifications and introduction of new statistics can be done by editing src/Components/StatisticSite/TrafficStatistic.js
 
-Any window in the selected time frame for which the Asynchronous Server Blaster was not set to capture traffic to the URI will show 0 requests.
+Select your URI. Choose the start date and end date for the time frame you want to view traffic to your URI. Any window in the selected time frame for which the Asynchronous Server Blaster was not set to capture traffic to the URI will show 0 requests.
 
 
 # UI Real Time Monitor Screen
 
-This page will show you a real time monitor for jobs that are currently in progress. You can choose what 
+This page will show you a real time monitor for jobs that are currently in progress. Includes various options to change what is displayed on the table; options and their default values can be changed at src/Components/StatisticSite/RealTime.js.
+
+## Select a Job to View Real Time Traffic 
+If no jobs are in progress, visit the Capture Job page and start capturing some traffic! If the capture timeframe is long enough, you'll be able to come back to the Real Time Monitor page and select your new job.
+
+## Information Displayed on Table
+Choose what fields to display. The fields are: recordID, jobID, jobName, date, host, uri, method, protocol, secure, sourceip, reqBody, and header; these can be set at capture time. Default includes the recordID, jobName, date, host, uri, and method fields.
+
+## Number of Records Displayed in Table
+Allows you to limit the number of records displayed on one page of the table. Default is 50 records.
+
+## Update Time
+This determines how frequently the table will be refreshed. Default is 60 seconds in between refreshes. You will be able to see a countdown until the next refresh.
 
 
 # Add new component to UI
 
 1- Update the nav bar by appending to the navLinks list in App.js, giving your new page an appropriate title and a route. 
 
-2- Create you new react component and import it into /Components/Playback/Playback.js.
-   Add route to render(), using the same route chosen in step 1 as your
-   exact path.
+2- Create you new react component and import it into src/Components/Playback/Playback.js. Add route to render(), using the same route chosen in step 1 as your exact path.
    
