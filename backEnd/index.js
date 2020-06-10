@@ -11,7 +11,8 @@ const path = require("path");
 
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, "/build")));
+app.use(express.static(path.join(__dirname, "build")));
+
 app.use(express.urlencoded({ extended: true }));
 app.use("/", home);
 app.use("/api/play", play);
@@ -19,6 +20,9 @@ app.use("/api/capture", capture);
 app.use("/api/login", login);
 app.use("/api/init", init);
 app.use("/api/createjob", createjob);
+app.get("*", function(req, res) {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
 // app.use("/api/preview", require('./routes/preview'));
 
 const port = process.env.PORT || 7999;

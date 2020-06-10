@@ -2,6 +2,8 @@ import React from "react";
 import RunPlaybackForm from "./RunPlaybackForm";
 import TemplateStyles from "./TemplateStyles";
 import Routes from "../Playback/Routes";
+//If your file in anyway differs from this file, do not make any changes. Keep this file as is.
+//Or the project will not compile. You will need to fix the changes you make, if you do so. Thanks.
 
 class RunJobs extends React.Component {
   constructor(props) {
@@ -9,9 +11,23 @@ class RunJobs extends React.Component {
     this.state = {
       renderRunForm: false,
       selectedJobId: 0,
-      jobs: props.jobs
+      selectedJobName: "",
+      statusCode: -1, //-1 fetching result 200/400 promise resolved, 0 = render job create form
+      jobdata: [{ jobName: "testJob", jobID: "JOBID Test" }]
     };
   }
+
+  getJobs = () => {
+    fetch("http://ec2-54-152-230-158.compute-1.amazonaws.com:7999/api/capture/jobs").then(resp => {
+      if (resp.status === 200) {
+        return resp.json().then(json => {
+          this.setState({ statusCode: resp.status, jobdata: json });
+        });
+      } else {
+        this.setState({ statusCode: resp.status, jobdata: [] });
+      }
+    });
+  };
 
   callMeMaybe = () => {
     this.setState({
@@ -19,46 +35,84 @@ class RunJobs extends React.Component {
       selectedJobId: 0
     });
   };
+
+  componentDidMount = () => {
+    this.getJobs();
+  };
   renderForm = () => {
-    return (
-      <RunPlaybackForm
-        callMeMaybe={this.callMeMaybe}
-        jobId={this.state.selectedJobId}
-        HTTPButtons={[
-          {
-            APIEndPoint: Routes.run,
-            data: this.state.selectedJobId,
-            HTTPService: this.props.HTTPService,
-            route: "/"
-          }
-        ]}
-      />
+    let form = (
+      <section className="card">
+        <h3 className="card-header bg-success">Jobs Discovered</h3>
+        <div className="card-body"></div>
+      </section>
     );
+
+    if (this.state.statusCode === -1) {
+      form = (
+        <section className="card">
+          <h3 className="card-header bg-success">Fetching Jobs</h3>
+          <div className="card-body">
+            <div class="spinner-border text-success" role="status">
+              <span class="sr-only">Loading Results...</span>
+            </div>
+          </div>
+        </section>
+      );
+    } else if (this.state.statusCode === 200) {
+      form = (
+        <section className="card">
+          <h3 className="card-header bg-success">Jobs Discovered</h3>
+          <div className="card-body">{this.renderList()}</div>
+        </section>
+      );
+    } else if (this.state.statusCode === 0) {
+      form = <RunPlaybackForm playbackName={this.state.selectedJobName} jobId={this.state.selectedJobId} />;
+    } else if (this.state.statusCode >= 400) {
+      form = (
+        <section className="card">
+          <h3 className="card-header bg-success">Jobs Discovered</h3>
+          <div className="card-body container">
+            <h3 className="row">Unable to run job</h3>
+            <div className="row">
+              <button
+                className="btn-success"
+                onClick={() => {
+                  this.setState({ statusCode: 0 });
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </section>
+      );
+    }
+    return form;
   };
 
-  runClick = e => {
-    this.setState({ renderRunForm: true, selectedJobData: e.target.data });
-  };
   renderList = () => {
     let list = <div>No Completed Playback jobs discovered.</div>;
 
     if (
-      this.props.jobs !== null &&
-      this.props.jobs !== undefined &&
-      this.props.jobs.length > 0
+      this.state.jobdata !== null &&
+      this.state.jobdata !== undefined &&
+      this.state.jobdata.length > 0
     ) {
-      list = this.props.jobs.map(jobId => {
+      list = this.state.jobdata.map(data => {
         return (
-          <div key={jobId} className={TemplateStyles.listingStyle}>
-            <div className={TemplateStyles.jobListing}>JobID: {jobId}</div>
+          <div key={data.jobId} className={TemplateStyles.listingStyle}>
+            <div className={TemplateStyles.jobListing}>
+              JobName: {data.jobName}
+            </div>
             <input
               type="button"
               value="Deploy Job"
               className={TemplateStyles.RouteButton}
               onClick={e => {
                 this.setState({
-                  renderRunForm: true,
-                  selectedJobId: jobId
+                  selectedJobId: data.jobID,
+                  selectedJobName: data.jobName,
+                  statusCode: 0
                 });
               }}
             />
@@ -68,15 +122,17 @@ class RunJobs extends React.Component {
     }
 
     return (
-      <section className={TemplateStyles.listWrapper}>
-        <h1 className={TemplateStyles.listingHeader}>---Jobs Discovered---</h1>
-        {list}
+      <section className={TemplateStyles.listWrapper + " card"}>
+        <h1 className=" card-header bg-success text-light">
+          ---Jobs Discovered---
+        </h1>
+        <section className="card-body">{list}</section>
       </section>
     );
   };
 
   render = () => {
-    return this.state.renderRunForm ? this.renderForm() : this.renderList();
+    return this.renderForm();
   };
 }
 
