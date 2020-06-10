@@ -90,7 +90,7 @@ server{
 
 ## Optional: Set up SSL verification
 
-If you want to set up SSL verification for your proxy server, directions can be found [here](https://github.com/tacemonster/traffic-playback/tree/master/documentation/ssl.md).
+If you want to set up SSL verification for your proxy server, directions can be found [here](https://github.com/tacemonster/traffic-playback/tree/master/Dcoumentation/ssl.md).
 
 ## Set up the database
 
@@ -155,6 +155,6 @@ npm install
 
 # Pick your interface
 
-If you want to use the Blaster from the command line, you're all set up at this point. Checkout the [Command line interface](https://github.com/tacemonster/traffic-playback/tree/master/documentation/command-line.md) documentation here for information about features and use.
+If you want to use the Blaster from the command line, you're all set up at this point. Checkout the [Command line interface](https://github.com/tacemonster/traffic-playback/tree/master/Dcoumentation/command-line.md) documentation here for information about features and use.
 
-If you'd prefer the graphical UI, check out the [user interface setup](https://github.com/tacemonster/traffic-playback/tree/master/documentation/UIsetup.md) instructions here, or the [UI usage documentation](https://github.com/tacemonster/traffic-playback/tree/master/documentation/user-interface.md) if you're already set up.
+If you'd prefer the graphical UI, check out the [user interface setup](https://github.com/tacemonster/traffic-playback/tree/master/Dcoumentation/UIsetup.md) instructions here, then the [UI usage documentation](https://github.com/tacemonster/traffic-playback/tree/master/Dcoumentation/user-interface.md) once you're set up.
