@@ -3,7 +3,7 @@ import Routes from '../Playback/Routes';
 // this helper class is used to help any common task that stats site needs.
 // make backend API call, etc
 class StatisticsHelper {
-    static host = 'http://localhost:7999';
+    static host = '';
 
     /**
      * get all jobs information from the server
