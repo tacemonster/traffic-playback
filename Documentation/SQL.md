@@ -5,13 +5,13 @@
 ## setup_mysql.sql
 
 ### Database creation
-1. Removes the trafficDB database if it already exists (this allows the script to reset the database back to the original state).
-2. Creates the trafficDB database.
-3. Creates a user that the software will use to interact with the database. 
+ 1. Removes the trafficDB database if it already exists (this allows the script to reset the database back to the original state).
+ 2. Creates the trafficDB database.
+ 3. Creates a user that the software will use to interact with the database. 
 *this is where you will modify the values if you would prefer a custom user for the database actions*
-4. Grants access to the database for the new user. 
+ 4. Grants access to the database for the new user. 
 *be sure to update here if you changed the name in line 3*
-6. Sets the new database as the current database to run the following commands.
+ 6. Sets the new database as the current database to run the following commands.
 
 ### Tables creation
 8. protocols – Holds the unique protocols captured into the database
@@ -89,7 +89,7 @@
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | recordID | int | FK to records(recordID) | 
-| headerID | int | FK to headers(headerID) |  
+| headerID | int | FK to headers(headerID) |
 
 84. v_record 
 	This view joins the other tables with the records table using the ID values and the relational (jobrel, headerrel) tables. It allows for viewing all the captured data as if it were all stored in a single table, while allowing the star schema design to save space by eliminating duplicate values. 
