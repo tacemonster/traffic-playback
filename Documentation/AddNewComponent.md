@@ -1,4 +1,4 @@
-##To add your own webpage to the UI:
+# To add your own webpage to the UI:
 
 1- Update the nav bar by appending to the navLinks list in App.js, giving your new page an appropriate title and a route. 
 

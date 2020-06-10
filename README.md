@@ -26,7 +26,7 @@ View the [UI usage documentation](https://github.com/tacemonster/traffic-playbac
 
 If you want to add features to the Asynchronous Server Blaster, check out the documentation on the [plug-in API](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/plugin-api.md) and the [back end API](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/API.md). If you want to add a new UI page, see [how to add a new component](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/AddNewComponent.md). 
 
-If databases are your thing and our schema isn't quite what you need, the [database schema documentation](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/SQL.md) has detailed comments about how our database works, and the [database schema diagram](https://github.com/tacemonster/traffic-playback/blob/master/sql/TrafficDB-v3.md) might also be helpful.
+If databases are your thing and our schema isn't quite what you need, the [database schema documentation](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/SQL.md) has detailed comments about how our database works, and the [database schema diagram](https://github.com/tacemonster/traffic-playback/blob/master/sql/TrafficDB-v3.sql) might also be helpful.
 
 
 
