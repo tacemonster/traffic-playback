@@ -18,9 +18,9 @@ class RunJobs extends React.Component {
   }
 
   getJobs = () => {
-    fetch("/api/capture/jobs").then(resp => {
+    fetch("http://ec2-54-152-230-158.compute-1.amazonaws.com:7999/api/capture/jobs").then(resp => {
       if (resp.status === 200) {
-        resp.parse().then(json => {
+        return resp.json().then(json => {
           this.setState({ statusCode: resp.status, jobdata: json });
         });
       } else {
@@ -66,7 +66,7 @@ class RunJobs extends React.Component {
         </section>
       );
     } else if (this.state.statusCode === 0) {
-      form = <RunPlaybackForm playbackName={this.state.selectedJobName} />;
+      form = <RunPlaybackForm playbackName={this.state.selectedJobName} jobId={this.state.selectedJobId} />;
     } else if (this.state.statusCode >= 400) {
       form = (
         <section className="card">

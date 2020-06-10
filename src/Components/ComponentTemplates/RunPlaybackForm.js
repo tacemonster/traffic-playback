@@ -16,7 +16,7 @@ class RunPlaybackForm extends React.Component {
       securePort: 443,
       requestBufferTime: 10000,
       hostname: "localhost",
-      backendServer: 1,
+      backendServer: "1",
       playbackName: props.playbackName
     };
     this.onChange = this.onChange.bind(this);
@@ -85,24 +85,32 @@ class RunPlaybackForm extends React.Component {
 
   runJob = () => {
     let payload = JSON.stringify(this.state);
-    fetch("/api/capture/captureJob", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: payload
-    }).then(resp => {
-      if (resp.status === 200) {
-        this.setState({ statusCode: 200 });
-      } else if (resp.statusCode === 400) {
-        this.setState({ statusCode: 400 });
-      } else {
-        this.setState({ statusCode: 404 });
+    console.log(this.state);
+    fetch(
+      "http://ec2-54-152-230-158.compute-1.amazonaws.com:7999/api/play/run",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload
       }
-    });
+    )
+      .then(resp => {
+        if (resp.status === 200) {
+          this.setState({ statusCode: 200 });
+        } else if (resp.statusCode === 400) {
+          this.setState({ statusCode: 400 });
+        } else {
+          this.setState({ statusCode: 404 });
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
   };
 
   render() {
     let retVal = null;
-    let buttons = <button onClick={this.runJob()}>Run Job</button>;
+    let buttons = <button onClick={this.runJob}>Run Job</button>;
     retVal = (
       <div className="card ">
         <h5 className="card-header bg-success text-light">
@@ -110,15 +118,7 @@ class RunPlaybackForm extends React.Component {
         </h5>
         <section className="card-body container">
           <section className="row">{this.buildForm()}</section>
-          <section className="row align-items-center">
-            {buttons}
-            <input
-              type="button"
-              className={TemplateStyles.BackNavButton}
-              onClick={this.props.callMeMaybe}
-              value="Back"
-            />
-          </section>
+          <section className="row align-items-center">{buttons}</section>
         </section>
       </div>
     );
