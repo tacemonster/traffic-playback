@@ -5,53 +5,53 @@
 ## setup_mysql.sql
 
 ### Database creation
- 1. Removes the trafficDB database if it already exists (this allows the script to reset the database back to the original state).
- 2. Creates the trafficDB database.
- 3. Creates a user that the software will use to interact with the database. 
+[1] Removes the trafficDB database if it already exists (this allows the script to reset the database back to the original state).
+[2] Creates the trafficDB database.
+[3] Creates a user that the software will use to interact with the database. 
 *this is where you will modify the values if you would prefer a custom user for the database actions*
- 4. Grants access to the database for the new user. 
+[4] Grants access to the database for the new user. 
 *be sure to update here if you changed the name in line 3*
- 6. Sets the new database as the current database to run the following commands.
+[6] Sets the new database as the current database to run the following commands.
 
 ### Tables creation
-8. protocols – Holds the unique protocols captured into the database
+[8] protocols – Holds the unique protocols captured into the database
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | protocolID | int | AUTO, PRIMARY KEY | 
 | protocolName | varchar(16) | NOT NULL, UNIQUE | 
 
-13. hosts 
+[13] hosts 
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | hostID | int | AUTO, PRIMARY KEY | 
 | hostName | varchar(256) | NOT NULL, UNIQUE | 
 
-18. uris 
+[18] uris 
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | uriID | int | AUTO, PRIMARY KEY |
 | uriName | varchar(256) | NOT NULL, UNIQUE |
 
-23. methods 
+[23] methods 
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | methodID | int | AUTO, PRIMARY KEY |
 | methodName | varchar(16) | NOT NULL, UNIQUE |
 
-28. headers 
+[28] headers 
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | headerID | int | AUTO, PRIMARY KEY |
 | headerName | text | |
 | headerValue | text | |
 
-34. sourceips 
+[34] sourceips 
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | sourceipID | int | AUTO, PRIMARY KEY |
 | sourceip | varchar(40) | NOT NULL, UNIQUE |
 
-39. jobs 
+[39] jobs 
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | jobID | int | AUTO, PRIMARY KEY | 
@@ -66,7 +66,7 @@
 | method | varchar(512) |  |  
 | sourceip | varchar(512) |  | 
 
-53. records 
+[53] records 
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | recordID | int | AUTO, PRIMARY KEY | 
@@ -79,19 +79,19 @@
 | sourceip | int | FK to sourceips(sourceipID) | 
 | body | longblob | | 
 
-70. jobrel 
+[70] jobrel 
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | jobID | int | NOT NULL, FK to jobs(jobID) | 
 | recordID | int | NOT NULL, FK to records(recordID) | 
 
-77. headerrel 
+[77] headerrel 
 | Field Name | Field Type | Field Parameters |
 | -------- | -------- | -------- | 
 | recordID | int | FK to records(recordID) | 
 | headerID | int | FK to headers(headerID) |
 
-84. v_record 
+[84] v_record 
 	This view joins the other tables with the records table using the ID values and the relational (jobrel, headerrel) tables. It allows for viewing all the captured data as if it were all stored in a single table, while allowing the star schema design to save space by eliminating duplicate values. 
 | Field Name | Referenced Field | Notes |
 | -------- | -------- | -------- | 
