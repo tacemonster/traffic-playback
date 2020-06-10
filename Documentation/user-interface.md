@@ -43,26 +43,19 @@ This field accepts a PCRE(PHP) formatted regular expression, and filters based o
 This page allows you to run previously captured or in progress jobs. You can then select a job from the list of available jobs to deploy. This will take you to a page where you can configure the job before running it.
 
 ## Playback Speed
-Adjust the speed at which to playback the captured traffic to see how your site will manage increases and decreases in traffic. This is a multiple of the original speed. For example:
-    0.5 --> playback traffic at half the speed
-    1 --> original speed
-    2 --> playback traffic at twice the speed
+Adjust the speed at which to playback the captured traffic to see how your site will manage increases and decreases in traffic. This is a multiple of the original speed. Default is 1 (the original speed).
 
 ## Port
-
+Specify which port to use for HTTP connections. Default is port 8080.
 
 ## Secure Port
-
+Specify which port to use for HTTPS connections. Default is port 443.
 
 ## Request Buffer Time
-
+Specifies the size in milliseconds of the rolling request schedule window. Default is 10000 milliseconds.
 
 ## Host Name
-
-
-## Backend Server
-    
-
+Choose a host to send requests to.
 
 
 # UI Statistics Screen
@@ -91,7 +84,7 @@ This determines how frequently the table will be refreshed. Default is 60 second
 
 # Add new component to UI
 
-1- Update the nav bar by appending to the navLinks list in App.js, giving your new page an appropriate title and a route. 
+1- Update the nav bar by appending to the navLinks list in src/App.js, giving your new page an appropriate title and a route. 
 
 2- Create you new react component and import it into src/Components/Playback/Playback.js. Add route to render(), using the same route chosen in step 1 as your exact path.
    
