@@ -484,7 +484,7 @@ if(args._.includes('playback')) {
         cmd_options = Object.assign(cmd_options, data);
     }
 
-    if(typeof args.configFile !== 'undefined' && args.json !== null) {
+    if(typeof args.json !== 'undefined' && args.json !== null) {
         let data = {};
         try {
             data = JSON.parse(args.json);
@@ -494,6 +494,7 @@ if(args._.includes('playback')) {
         }
         cmd_options = Object.assign(cmd_options, data);
     }
+
 
     cmd_options = Object.assign(cmd_options, args);
     fill_in_default_values(default_options, cmd_options);
