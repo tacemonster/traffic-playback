@@ -2,15 +2,20 @@
 
 ## With existing NGINX proxy:
 
-Setup a [LAMP](https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04) (apache) or [LEMP](https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04) (nginx) server to host traffic capture.
+Setup a LAMP (apache) or LEMP (nginx) server to host traffic capture.
+[LAMP setup instructions](https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04)
+[LEMP setup instructions](https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04)
 
 ## Without existing NGINX proxy:
 
-Setup a [LEMP](https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04) server to function as a reverse proxy and host traffic capture.
+Setup a LEMP server to function as a reverse proxy and host traffic capture.
+[LEMP setup instructions](https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04)
 
 ## Configure NGINX Reverse Proxy
 
 Begin by setting up the nginx configuration to function as a reverse proxy for the http(s) website or service you wish to capture.
+
+The configuration file is found at **/etc/nginx/sites-available/default**, and should be edited or replaced to mimic the following example.
 
 **Example nginx server directives**
 
@@ -81,7 +86,7 @@ server{
 }
 ```
 
-If you are editing an existing reverse proxy configuration, the important part here is to use the nginx-mirror module `mirror /tpt-mirror` in your reverse proxy location handler, and create a  `location /tpt-mirror` configuration block to dispatch the request for capture logging.
+If you are editing an existing reverse proxy configuration and do not want to simply replace the existing configuration file, the important part here is to use the nginx-mirror module `mirror /tpt-mirror` in your reverse proxy location handler, and create a  `location /tpt-mirror` configuration block to dispatch the request for capture logging.
 
 ## Set up the database
 
@@ -90,6 +95,12 @@ Edit the file setup_mysql.sql to set a username and password for the project, th
 mysql trafficDB < sql/setup_mysql.sql
 ```
 to set up the database
+
+# TODO MAYBE REMOVE 
+
+## Universal capture
+
+If you aren't interested in granular capture and instead want to control a single, universal capture from the command line
 
 Then run
 ```
@@ -144,11 +155,23 @@ $database = "database_name";
 //End script configuration block
 ```
 
-## Setup playback
+## Option 1: Setup Graphical User Interface
 
-Install [Node.js](https://nodejs.org/en/download/package-manager/)
+# TODO HOW TO SET UP - MEDINA
+
+# TODO LINK TO UI USAGE DOCS
+
+Now you can head to the [User Interface usage documentation](https://github.com/tacemonster/traffic-playback/tree/master/????????.md) for more information about using its features.
+
+## Option 2: Setup Command Line Interface
+
+Install Node.js on the server
+[Node.js installation instructions](https://nodejs.org/en/download/package-manager/)
 
 In the root of the repository, run 
 ```
 npm install
 ```
+
+# TODO ADD LINK TO CLI DOCS
+After the install terminates, head to the [Commandline Interface usage documentation](https://github.com/tacemonster/traffic-playback/tree/master/????????.md) for more information about using its features.
