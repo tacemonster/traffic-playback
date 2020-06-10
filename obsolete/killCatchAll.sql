@@ -1,1 +1,0 @@
-DELETE FROM jobs WHERE jobName = 'Catch All';
