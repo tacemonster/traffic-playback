@@ -1,9 +1,11 @@
 <?php
 //Database configuration
+
 $servername	= "localhost";
 $username	= "traffic";
 $password	= "12345";
 $database	= "trafficDB";
+
 //End script configuration block
 
 //Connect to mysql, and cleanly handle any errors.
