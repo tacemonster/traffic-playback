@@ -248,7 +248,7 @@ class CreateJob extends React.Component {
     if (this.state.jobname !== "") {
       this.setState({ statusCode: 0 });
 
-      fetch("http://ec2-54-152-230-158.compute-1.amazonaws.com:7999/api/capture/captureJob", {
+      fetch("http://ec2-54-152-230-158.compute-1.amazonaws.com:7999/api/createJob", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: this.onClickStateFormat()
