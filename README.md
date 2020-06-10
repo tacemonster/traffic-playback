@@ -20,7 +20,7 @@ When you're ready to play the captured requests at your beta site, you can doubl
 
 Our UI also has bonus features. Traffic statistics show you up-to-date counts of the data you've captured by URI and an interactive graph to show you traffic by day on any URI of interest, and the real-time monitor updates at the interval of your choosing, showing you the most recently captured data.
 
-View the [UI usage documentation](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/UISetup.md) for details about using the graphical user interface, or the [command-line interface](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/command-line.md) document to see how to use the product at the command line.
+View the [UI usage documentation](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/UIsetup.md) for details about using the graphical user interface, or the [command-line interface](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/command-line.md) document to see how to use the product at the command line.
 
 ## Expanding the Blast
 
