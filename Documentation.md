@@ -427,7 +427,7 @@ To stop the server press \*control c\*\* together.
 
 That's it! You have completed setting up the express node server backend.
 
-UI Setup
+### UI Setup
 
 ### Dependencies
 
@@ -472,8 +472,8 @@ In App.js, add a json with the following formatting inside the array assigned to
 This statement adds a link to the navbar. The next step is to render a component at /linkroute.
 
 To do this, open Playback.js  and add :
-<Route exact path="/linkroute" component={linkrouteComponent}></Route>   
-inside the <Switch> </Switch> of the render method.
+Route exact path="/linkroute" component={linkrouteComponent} /Route   
+inside the Switch> /Switch of the render method.
 
 
 

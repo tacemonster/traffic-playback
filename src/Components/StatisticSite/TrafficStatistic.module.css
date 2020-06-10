@@ -2,9 +2,18 @@
     text-align: center;
 }
 
+.jobListBlock {
+    margin: 30px 0 10px;
+}
+
+.requiredSign {
+    color: rgb(248, 51, 51);
+}
+
+.myContainer {
+    padding: 40px 0 20px;
+}
 .tableContainer {
-    width: 100%;
-    margin: 30px auto 20px;
     word-break: break-word;
 }
 .myTable > tbody {
@@ -20,7 +29,6 @@
 }
 
 .chartContainer {
-    width: 92%;
     margin: 35px auto 30px;
 }
 
@@ -67,20 +75,30 @@
     width: 100%;
 }
 
+.toTopText {
+    color: rgb(29, 141, 222);
+    border-bottom: 1px solid rgb(29, 141, 222);
+    padding-bottom: 2px;
+    cursor: pointer;
+}
+
 .alertBox {
     margin: 10px auto 5px;
+    text-align: center;
 }
 
-.previewBtn {
-    width: 95%;
+.realtimeOptionBlock {
+    margin-bottom: 20px;
 }
 
-.previewTitle {
-    word-break: break-all;
+@media (max-width: 768px) {
+    .myTable {
+        font-size: 0.8em;
+    }
 }
-.previewContant {
-    overflow: auto;
-    width: 100%;
-    height: 67vh;
-    border: none;
+
+@media (max-width: 575px) {
+    .myTable {
+        font-size: 0.7em;
+    }
 }
