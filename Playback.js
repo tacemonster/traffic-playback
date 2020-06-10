@@ -195,7 +195,7 @@ const args = require('yargs')
         });
         yargs.options('playback-speed', {
             alias: 'ps',
-            desc: 'Specifies the speed at which requests are played back. [Default: 1]",
+            desc: 'Specifies the speed at which requests are played back. [Default: 1]',
             type: 'number'
         });
         yargs.options('port', {
@@ -241,6 +241,7 @@ const args = require('yargs')
         return yargs;
     })
     .help()
+    .alias('h', 'help')
     .argv
 let cmd_options = args;
 
