@@ -72,7 +72,7 @@ function post_request_hook(req, options) {
 const args = require('yargs')
     .scriptName("Playback")
     .usage('$0 <cmd> [args]')
-    .command('capture-job-list', 'get the list of jobs available to be played back', (yargs) => {
+    .command('capture-job-list', 'Get the list of jobs available to be played back.', (yargs) => {
         yargs.options('verbose', {
             alias: 'v',
             desc: 'Specifies verbosity level',
@@ -80,7 +80,7 @@ const args = require('yargs')
         });
         return yargs;
     })
-    .command('capture-job-start', 'start a capture job', (yargs) => {
+    .command('capture-job-start', 'Start a capture job.', (yargs) => {
         yargs.options('job-name', {
             alias: 'n',
             desc: '(Required) Specifies what the new job will be named.',
@@ -131,7 +131,7 @@ const args = require('yargs')
         });
         return yargs;
     })
-    .command('capture-job-edit', 'stops a capture job by job', (yargs) => {
+    .command('capture-job-edit', 'Edit an existing capture job.', (yargs) => {
         yargs.options('job-id', {
             alias: 'i',
             desc: '(Required) Specify the job ID of the job you wish to edit.',
@@ -187,7 +187,7 @@ const args = require('yargs')
         });
         return yargs;
     })
-    .command('playback', 'plays back captured traffic', (yargs) => {
+    .command('playback', 'Plays back requests captured by a capture job.', (yargs) => {
         yargs.options('job-id', {
             alias: 'i',
             desc: '(Required) Specifies which job is to be played back.',
