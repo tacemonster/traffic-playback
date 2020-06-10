@@ -1,5 +1,6 @@
 # How to use the Asynchronous Server Blaster UI
 
+
 # UI Capture Job Screen
 
 This page allows you to maniupulate the settings involved with request capture.
@@ -35,6 +36,45 @@ This field accepts a PCRE(PHP) formatted regular expression, and filters based o
 
 ## Method
 This field accepts a PCRE(PHP) formatted regular expression, and filters based on the HTTP request method (GET, POST, PUT, ...). For example, #((GET)|(POST))# will match GET and POST requests but not capture any other type.
+
+
+# UI Run Job Screen
+
+This page allows you to run previously captured or in progress jobs. You can then select a job from the list of available jobs to deploy. This will take you to a page where you can configure the job before running it.
+
+## Playback Speed
+Adjust the speed at which to playback the captured traffic to see how your site will manage increases and decreases in traffic. This is a multiple of the original speed. For example:
+    0.5 --> playback traffic at half the speed
+    1 --> original speed
+    2 --> playback traffic at twice the speed
+
+## Port
+
+
+## Secure Port
+
+
+## Request Buffer Time
+
+
+## Host Name
+
+
+## Backend Server
+        
+
+
+
+# UI Statistics Screen
+
+This page will show you a graph of traffic captured for a chosen URI. Select your URI. Choose the start date and end date for the time frame you want to view traffic to your URI. 
+
+Any window in the selected time frame for which the Asynchronous Server Blaster was not set to capture traffic to the URI will show 0 requests.
+
+
+# UI Real Time Monitor Screen
+
+This page will show you a real time monitor for jobs that are currently in progress. You can choose what 
 
 
 # Add new component to UI
