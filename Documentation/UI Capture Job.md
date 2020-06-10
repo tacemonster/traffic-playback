@@ -1,3 +1,5 @@
+# How to use the Asynchronous Server Blaster UI
+
 # UI Capture Job Screen
 
 This page allows you to maniupulate the settings involved with request capture.
@@ -33,3 +35,13 @@ This field accepts a PCRE(PHP) formatted regular expression, and filters based o
 
 ## Method
 This field accepts a PCRE(PHP) formatted regular expression, and filters based on the HTTP request method (GET, POST, PUT, ...). For example, #((GET)|(POST))# will match GET and POST requests but not capture any other type.
+
+
+# Add new component to UI
+
+1- Update the nav bar by appending to the navLinks list in App.js, giving your new page an appropriate title and a route. 
+
+2- Create you new react component and import it into /Components/Playback/Playback.js.
+   Add route to render(), using the same route chosen in step 1 as your
+   exact path.
+   
