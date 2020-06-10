@@ -3,7 +3,9 @@
 ## With existing NGINX proxy:
 
 -Setup a LAMP (apache) or LEMP (nginx) server to host traffic capture.
+
 [LAMP setup instructions](https://www.digitalocean.com/community/tutorials/how-to-install-linux-apache-mysql-php-lamp-stack-ubuntu-18-04)
+
 [LEMP setup instructions](https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mysql-php-lemp-stack-ubuntu-18-04)
 
 ## Without existing NGINX proxy:
@@ -90,7 +92,7 @@ server{
 
 ## Optional: Set up SSL verification
 
-If you want to set up SSL verification for your proxy server, directions can be found [here](https://github.com/tacemonster/traffic-playback/tree/master/Dcoumentation/ssl.md).
+If you want to set up SSL verification for your proxy server, directions can be found [here](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/ssl.md).
 
 ## Set up the database
 
@@ -155,6 +157,6 @@ npm install
 
 # Pick your interface
 
-If you want to use the Blaster from the command line, you're all set up at this point. Checkout the [Command line interface](https://github.com/tacemonster/traffic-playback/tree/master/Dcoumentation/command-line.md) documentation here for information about features and use.
+If you want to use the Blaster from the command line, you're all set up at this point. Checkout the [Command line interface](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/command-line.md) documentation here for information about features and use.
 
-If you'd prefer the graphical UI, check out the [user interface setup](https://github.com/tacemonster/traffic-playback/tree/master/Dcoumentation/UIsetup.md) instructions here, then the [UI usage documentation](https://github.com/tacemonster/traffic-playback/tree/master/Dcoumentation/user-interface.md) once you're set up.
+If you'd prefer the graphical UI, check out the [user interface setup](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/UIsetup.md) instructions here, then the [UI usage documentation](https://github.com/tacemonster/traffic-playback/blob/master/documentation/user-interface.md) once you're set up.
