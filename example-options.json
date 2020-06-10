@@ -1,0 +1,10 @@
+{
+    "jobId": 2,
+    "playbackSpeed": 1,
+    "port": 80,
+    "securePort": 443,
+    "requestBufferTime": 10000,
+    "target": "localhost",
+    "skipSslValidityCheck": true,
+    "forceHostHeader": false
+}

@@ -72,36 +72,31 @@ function post_request_hook(req, options) {
 const args = require('yargs')
     .scriptName("Playback")
     .usage('$0 <cmd> [args]')
-    .command('capture-job-list', 'get the list of jobs available to be played back', (yargs) => {
+    .command('capture-job-list', 'Get the list of jobs available to be played back.', (yargs) => {
         yargs.options('verbose', {
             alias: 'v',
-            desc: 'specifies verbosity level',
+            desc: 'Specifies verbosity level',
             type: 'count'
         });
         return yargs;
     })
-    .command('capture-job-start', 'start a capture job', (yargs) => {
-        yargs.options('verbose', {
-            alias: 'v',
-            desc: 'specifies verbosity level',
-            type: 'count'
-        });
+    .command('capture-job-start', 'Start a capture job.', (yargs) => {
         yargs.options('job-name', {
             alias: 'n',
-            desc: 'specifies the name of the job',
+            desc: '(Required) Specifies what the new job will be named.',
             type: 'string'
         });
         yargs.options('active', {
             alias: 'a',
-            desc: 'This determines whether the capture job is currently running',
+            desc: 'Specifies if a job is active (i.e. if it will start capturing traffic upon creation). [Default: true]',
             type: 'boolean'
         });
         yargs.options('job-start', {
-            desc: 'when the job will start - in UNIX epoch time',
+            desc: 'When the job will start in UNIX epoch time.',
             type: 'number'
         });
         yargs.options('job-stop', {
-            desc: 'when the job will stop - in UNIX epoch time',
+            desc: 'When the job will stop in UNIX epoch time.',
             type: 'number'
         });
         yargs.options('secure', {
@@ -136,28 +131,23 @@ const args = require('yargs')
         });
         return yargs;
     })
-    .command('capture-job-edit', 'stops a capture job by job', (yargs) => {
-        yargs.options('verbose', {
-            alias: 'v',
-            desc: 'specifies verbosity level',
-            type: 'count'
-        });
+    .command('capture-job-edit', 'Edit an existing capture job.', (yargs) => {
         yargs.options('job-id', {
             alias: 'i',
-            desc: 'specifies capture job-id to edit',
+            desc: '(Required) Specify the job ID of the job you wish to edit.',
             type: 'number'
         });
         yargs.options('job-name', {
             alias: 'n',
-            desc: 'specifies the name of the job',
+            desc: 'Specifies what the job will be named.',
             type: 'string'
         });
         yargs.options('job-start', {
-            desc: 'when the job will start',
+            desc: 'When the job will start in UNIX epoch time.',
             type: 'number'
         });
         yargs.options('job-stop', {
-            desc: 'when the job will stop',
+            desc: 'When the job will stop in UNIX epoch time.',
             type: 'number'
         });
         yargs.options('active', {
@@ -197,67 +187,61 @@ const args = require('yargs')
         });
         return yargs;
     })
-    .command('playback', 'plays back captured traffic', (yargs) => {
+    .command('playback', 'Plays back requests captured by a capture job.', (yargs) => {
         yargs.options('job-id', {
             alias: 'i',
-            desc: 'specifies which job is to be played back',
+            desc: '(Required) Specifies which job is to be played back.',
             type: 'number'
-        });
-        yargs.options('verbose', {
-            alias: 'v',
-            desc: 'specifies verbosity level',
-            type: 'count'
         });
         yargs.options('playback-speed', {
             alias: 'ps',
-            desc: 'specifies the speed at which requests are played back',
+            desc: 'Specifies the speed at which requests are played back. [Default: 1]',
             type: 'number'
         });
         yargs.options('port', {
             alias: 'p',
-            desc: 'specifies which port to use for http connections',
+            desc: 'Specifies which port to use for HTTP connections. [Default: 80]',
             type: 'number'
         });
         yargs.options('secure-port', {
             alias: 's',
-            desc: 'specifies which port to use for SSL',
+            desc: 'Specifies which port to use for HTTPS connections. [Default: 443]',
             type: 'number'
         });
         yargs.options('request-buffer-time', {
             alias: 'r',
-            desc: 'specifies the size in milliseconds of the rolling request schedule window',
+            desc: 'Specifies the size in milliseconds of the rolling request schedule window. [Default: 10000]',
             type: 'number'
         });
         yargs.options('target', {
             alias: 't',
-            desc: 'specifies where to send requests to',
+            desc: 'Specifies where to send requests to (i.e. www.domain.com). [Default: localhost]',
             type: 'string'
         });
         yargs.options('skip-ssl-validity-check', {
             alias: ['skip-ssl', 'ssvc'],
-            desc: 'specifies whether or not to skip the ssl validity check - defaults to true',
+            desc: 'Specifies whether or not to skip the ssl validity check [Default: true]',
             boolean: true
         });
         yargs.options('force-host-header', {
             alias: ['force-host', 'fh'],
-            desc: 'forces the request header\'s Host value to be set to the value specified by target - defaults to false',
+            desc: 'Forces the request header\'s Host value to be set to the value specified by target [Default: false]',
             boolean: true
         });
         yargs.options('config-file', {
             alias: 'c',
-            desc: 'specifies a file containing json options',
-            default: null,
+            desc: 'Specifies a file containing json options.',
             type: 'string'
         });
         yargs.options('json', {
             alias: 'j',
-            desc: 'user-specified json string with options',
-            default: null,
+            desc: 'User-specified json string with options.',
             type: 'string'
         });
         return yargs;
     })
     .help()
+    .alias('h', 'help')
     .argv
 let cmd_options = args;
 
@@ -389,7 +373,6 @@ if(args._.includes('capture-job-list')) {
 // Code for starting a capture job
 if(args._.includes('capture-job-start')) {
     let default_options = {
-        verbose: 0,
         active: true,
         jobStart: null,
         jobStop: null,
@@ -429,12 +412,6 @@ if(args._.includes('capture-job-start')) {
 
 // Code for editing a capture job
 if(args._.includes('capture-job-edit')) {
-    let default_options = {
-        verbose: 0
-    };
-
-    fill_in_default_values(default_options, cmd_options);
-
     // Validation
     if(cmd_options.jobId === undefined) {
         throw error('Job ID must be specified');
@@ -480,17 +457,18 @@ if(args._.includes('playback')) {
     // Build object out of arguments
     cmd_options = {};
     let default_options = {
-        verbose: 0,
         playbackSpeed: 1,
         target: 'localhost',
         port: 80,
         securePort: 443,
         requestBufferTime: 10000,
         skipSslValidityCheck: true,
-        forceHostHeader: false
+        forceHostHeader: false,
+        configFile: null,
+        json: null
     };
 
-    if(args.configFile !== null) {
+    if(typeof args.configFile !== 'undefined' && args.configFile !== null) {
         config_file_data = fs.readFileSync(args.configFile, 'utf-8', function(err, jsonData){
             if (err) throw err;
         });
@@ -506,7 +484,7 @@ if(args._.includes('playback')) {
         cmd_options = Object.assign(cmd_options, data);
     }
 
-    if(args.json !== null) {
+    if(typeof args.json !== 'undefined' && args.json !== null) {
         let data = {};
         try {
             data = JSON.parse(args.json);
@@ -516,6 +494,7 @@ if(args._.includes('playback')) {
         }
         cmd_options = Object.assign(cmd_options, data);
     }
+
 
     cmd_options = Object.assign(cmd_options, args);
     fill_in_default_values(default_options, cmd_options);

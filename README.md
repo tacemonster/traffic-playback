@@ -5,20 +5,3 @@ This tool will allow you to capture a record of traffic going to a website that 
 ## Getting Set Up
 
 First, you will want to [set up a reverse proxy](https://github.com/tacemonster/traffic-playback/tree/master/Capture/capture_set.md) to capture your network traffic without slowing down access to the site. You will then need to set up the database.
-
-## Product Features
-
-To view the currently implemented features, type
-```
-node Playback.js --help
-```
-
-To view Capture jobs that have been created, type
-```
-node Playback.js jobs
-```
-
-To see the available options and how to start a playback job, type
-```
-node Playback.js playback --help
-```
