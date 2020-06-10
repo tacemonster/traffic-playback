@@ -13,6 +13,7 @@
     "dotenv": "^8.2.0",
     "joi": "^14.3.1",
     "joi-browser": "^13.4.0",
+    "jquery": "^3.5.1",
     "mariadb": "^2.3.1",
     "mssql": "^6.2.0",
     "mysql": "^2.18.1",
@@ -33,6 +34,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "postbuild": " rm -r ./backEnd/build && mv build ./backEnd/",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

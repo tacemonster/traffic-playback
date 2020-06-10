@@ -1,4 +1,4 @@
-var methods = require('../Playback.js');
+const methods = require('../Playback.js');
 
 // You have access to the register_hook function which will add your function to the hooks list and
 // the hook_events object which is a enum containing all the events where a hook can be put.
