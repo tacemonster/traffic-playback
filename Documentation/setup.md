@@ -159,4 +159,4 @@ npm install
 
 If you want to use the Blaster from the command line, you're all set up at this point. Checkout the [Command line interface](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/command-line.md) documentation here for information about features and use.
 
-If you'd prefer the graphical UI, check out the [user interface setup](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/UIsetup.md) instructions here, then the [UI usage documentation](https://github.com/tacemonster/traffic-playback/blob/master/documentation/user-interface.md) once you're set up.
+If you'd prefer the graphical UI, check out the [user interface setup](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/UIsetup.md) instructions here, then the [UI usage documentation](https://github.com/tacemonster/traffic-playback/blob/master/Documentation/user-interface.md) once you're set up.
